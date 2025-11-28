@@ -1,0 +1,82 @@
+{
+  "configurations": [
+    {
+      "name": "Watcom",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${env:WATCOM_ROOT}/h",
+        "${env:WATCOM_ROOT}/h/nt"
+      ],
+      "defines": [
+        "_DEBUG",
+        "__WATCOMC__",
+        "__DOS__",
+        "MSDOS",
+        "__I86__",
+        "far=",
+        "near=",
+        "huge=",
+        "_far=",
+        "_near=",
+        "_huge=",
+        "__far=",
+        "__near=",
+        "__huge=",
+        "cdecl=",
+        "_cdecl=",
+        "__cdecl=",
+        "pascal=",
+        "_pascal=",
+        "__pascal=",
+        "fortran=",
+        "_fortran=",
+        "__fortran=",
+        "interrupt=",
+        "_interrupt=",
+        "__interrupt=",
+        "MK_FP(seg,off)=((void __far *)(((unsigned long)(seg) << 16) | (unsigned)(off)))",
+        "FP_SEG(fp)=((unsigned)((unsigned long)(void __far *)(fp) >> 16))",
+        "FP_OFF(fp)=((unsigned)(fp))"
+      ],
+      "compilerPath": "${env:WATCOM_ROOT}/binnt64/wcc.exe",
+      "cStandard": "c89",
+      "cppStandard": "c++98",
+      "intelliSenseMode": "windows-gcc-x64",
+      "compilerArgs": [],
+      "browse": {
+        "path": [
+          "${workspaceFolder}",
+          "${env:WATCOM_ROOT}/h"
+        ],
+        "limitSymbolsToIncludedHeaders": true
+      }
+    },
+    {
+      "name": "DJGPP",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${env:DJGPP_ROOT}/i586-pc-msdosdjgpp/sys-include"
+      ],
+      "defines": [
+        "_DEBUG",
+        "__DJGPP__",
+        "__MSDOS__",
+        "MSDOS",
+        "__GO32__"
+      ],
+      "compilerPath": "${env:DJGPP_ROOT}/i586-pc-msdosdjgpp/bin/gcc.exe",
+      "cStandard": "gnu11",
+      "cppStandard": "gnu++14",
+      "intelliSenseMode": "gcc-x86",
+      "compilerArgs": [],
+      "browse": {
+        "path": [
+          "${workspaceFolder}",
+          "${env:DJGPP_ROOT}/i586-pc-msdosdjgpp/sys-include"
+        ],
+        "limitSymbolsToIncludedHeaders": true
+      }
+    }
+  ],
+  "version": 4
+}
