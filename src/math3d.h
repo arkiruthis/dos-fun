@@ -42,10 +42,10 @@ typedef signed int fix;
 #endif // clamp
 
 // SIN/COS lookups
-#define SINETABLE_SIZE 1024
-#define _SINETABLE_SIZE 1023
+#define SINETABLE_SIZE 256
+#define _SINETABLE_SIZE 255
 #define fixsin(a) g_SineTable[(a) & _SINETABLE_SIZE]
-#define fixcos(a) g_SineTable[((a) + 256) & _SINETABLE_SIZE]
+#define fixcos(a) g_SineTable[((a) + 64) & _SINETABLE_SIZE]
 extern fix g_SineTable[];
 
 // Reciprocal table e.g., 1/a
