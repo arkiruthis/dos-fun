@@ -43,7 +43,7 @@ echo Compiling source files...
 set COMPILE_ERROR=0
 for %%f in (src\*.c) do (
     echo   Compiling %%f...
-    wcc386 -mf -4 -w4 -ox -ot -ol+ -oi -fo=obj\%%~nf.obj %%f
+    wcc386 -mf -5s -w4 -ox -ot -ol+ -oi -fo=obj\%%~nf.obj %%f
     if errorlevel 1 set COMPILE_ERROR=1
 )
 
@@ -53,26 +53,26 @@ if %COMPILE_ERROR%==1 (
 )
 
 echo Linking...
-wlink system dos4g file {obj\*.obj} name bin\main.exe
+wlink system dos4g file {obj\*.obj} name bin\wmain.exe
 
 if errorlevel 1 (
     echo Linking failed!
     exit /b 1
 )
 
-echo Build successful! Output: bin\main.exe
+echo Build successful! Output: bin\wmain.exe
 
 REM Install to target directory
 if not exist "%DOS_INSTALL_DIR%" mkdir "%DOS_INSTALL_DIR%"
-echo Installing bin\main.exe to %DOS_INSTALL_DIR%...
-copy bin\main.exe "%DOS_INSTALL_DIR%" > nul
+echo Installing bin\wmain.exe to %DOS_INSTALL_DIR%...
+copy bin\wmain.exe "%DOS_INSTALL_DIR%" > nul
 echo Installation complete.
 goto :eof
 
 :clean
 echo Cleaning build artifacts...
 if exist obj\*.obj del obj\*.obj
-if exist bin\main.exe del bin\main.exe
+if exist bin\wmain.exe del bin\wmain.exe
 echo Clean complete.
 if "%1"=="clean" goto :eof
 exit /b 0

@@ -53,26 +53,26 @@ if %COMPILE_ERROR%==1 (
 )
 
 echo Linking...
-gcc -o bin\alt_djgpp.exe obj\*.o
+gcc -o bin\dmain.exe obj\*.o -lm
 
 if errorlevel 1 (
     echo Linking failed!
     exit /b 1
 )
 
-echo Build successful! Output: bin\alt_djgpp.exe
+echo Build successful! Output: bin\dmain.exe
 
 REM Install to target directory
 if not exist "%DOS_INSTALL_DIR%" mkdir "%DOS_INSTALL_DIR%"
-echo Installing bin\alt_djgpp.exe to %DOS_INSTALL_DIR%...
-copy bin\alt_djgpp.exe "%DOS_INSTALL_DIR%" > nul
+echo Installing bin\dmain.exe to %DOS_INSTALL_DIR%...
+copy bin\dmain.exe "%DOS_INSTALL_DIR%" > nul
 echo Installation complete.
 goto :eof
 
 :clean
 echo Cleaning build artifacts...
 if exist obj\*.o del obj\*.o
-if exist bin\alt_djgpp.exe del bin\alt_djgpp.exe
+if exist bin\dmain.exe del bin\dmain.exe
 echo Clean complete.
 if "%1"=="clean" goto :eof
 exit /b 0
