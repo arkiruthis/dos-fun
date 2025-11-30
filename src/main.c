@@ -109,13 +109,6 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
     b = verts[triList[i * 3 + 1]];
     c = verts[triList[i * 3 + 2]];
 
-    a.x += (WIDTH << 15);
-    a.y += (HEIGHT << 15);
-    b.x += (WIDTH << 15);
-    b.y += (HEIGHT << 15);
-    c.x += (WIDTH << 15);
-    c.y += (HEIGHT << 15);
-
     // Sort vertices by Y
     if (a.y > b.y)
     {
@@ -145,59 +138,50 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
       c.x = j;
     }
 
-    int shortHeight = fix2int(b.y - a.y);
-    while (shortHeight > 256)
-    {
-      shortHeight >>= 1;
-    }
-    int longheight = fix2int(c.y - a.y);
-    while (longheight > 256)
-    {
-      longheight >>= 1;
-    }
+    a.x = (a.x >> 16) + (WIDTH >> 1);
+    a.y = (a.y >> 16) + (HEIGHT >> 1);
+    b.x = (b.x >> 16) + (WIDTH >> 1);
+    b.y = (b.y >> 16) + (HEIGHT >> 1);
+    c.x = (c.x >> 16) + (WIDTH >> 1);
+    c.y = (c.y >> 16) + (HEIGHT >> 1);
 
-    long_dx = (c.x - a.x);
-    short_dx = (b.x - a.x);
-    long_dx = multOneOver(long_dx, longheight);
-    short_dx = multOneOver(short_dx, shortHeight);
+    int shortHeight = b.y - a.y;
+    int longHeight = c.y - a.y;
+
+    long_dx = (c.x - a.x) * oneover(longHeight);
+    short_dx = (b.x - a.x) * oneover(shortHeight);
 
     if (long_dx < short_dx) // Left side long edge
     {
-      lx = a.x;
-      rx = a.x;
-      ptr = &back[(a.y >> 16) * WIDTH];
-      while (shortHeight-- > 0)
+      lx = (a.x << 16);
+      rx = (a.x << 16);
+      ptr = &back[a.y * WIDTH];
+      while (--shortHeight > 0)
       {
-        j = lx >> 16;
-        k = rx >> 16;
+        j = ((rx - lx) >> 16);
+        ptrEnd = ptr + (lx >> 16);
         do
         {
-          *(ptr + j) = color;
-        } while ((++j) < k);
+          *ptrEnd++ = color;
+        } while (--j > 0);
 
         ptr += WIDTH;
         lx += long_dx;
         rx += short_dx;
       };
 
-      shortHeight = fix2int(c.y - b.y);
-      while (shortHeight > 256)
-      {
-        shortHeight >>= 1;
-      }
+      shortHeight = c.y - b.y;
+      short_dx = (c.x - b.x) * oneover(shortHeight);
+      rx = (b.x << 16);
 
-      short_dx = (c.x - b.x);
-      short_dx = multOneOver(short_dx, shortHeight);
-      rx = b.x;
-
-      while (shortHeight-- > 0)
+      while (--shortHeight > 0)
       {
-        j = lx >> 16;
-        k = rx >> 16;
+        j = ((rx - lx) >> 16);
+        ptrEnd = ptr + (lx >> 16);
         do
         {
-          *(ptr + j) = color;
-        } while ((++j) < k);
+          *ptrEnd++ = color;
+        } while (--j > 0);
 
         ptr += WIDTH;
         lx += long_dx;
@@ -206,41 +190,35 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
     }
     else // Right side long edge
     {
-      lx = a.x;
-      rx = a.x;
-      ptr = &back[(a.y >> 16) * WIDTH];
-      while (shortHeight-- > 0)
+      lx = (a.x << 16);
+      rx = (a.x << 16);
+      ptr = &back[a.y * WIDTH];
+      while (--shortHeight > 0)
       {
-        j = lx >> 16;
-        k = rx >> 16;
+        j = ((rx - lx) >> 16);
+        ptrEnd = ptr + (lx >> 16);
         do
         {
-          *(ptr + j) = color;
-        } while ((++j) < k);
+          *ptrEnd++ = color;
+        } while (--j > 0);
 
         ptr += WIDTH;
         rx += long_dx;
         lx += short_dx;
       };
 
-      shortHeight = fix2int(c.y - b.y);
-      while (shortHeight > 256)
-      {
-        shortHeight >>= 1;
-      }
+      shortHeight = c.y - b.y;
+      short_dx = (c.x - b.x) * oneover(shortHeight);
+      lx = (b.x << 16);
 
-      short_dx = (c.x - b.x);
-      short_dx = multOneOver(short_dx, shortHeight);
-      lx = b.x;
-
-      while (shortHeight-- > 0)
+      while (--shortHeight > 0)
       {
-        j = lx >> 16;
-        k = rx >> 16;
+        j = ((rx - lx) >> 16);
+        ptrEnd = ptr + (lx >> 16);
         do
         {
-          *(ptr + j) = color;
-        } while ((++j) < k);
+          *ptrEnd++ = color;
+        } while (--j > 0);
 
         ptr += WIDTH;
         rx += long_dx;
@@ -265,9 +243,9 @@ int main(void)
 
   for (i = 0; i < 8; ++i)
   {
-    cubeVerts[i].x <<= 5;
-    cubeVerts[i].y <<= 5;
-    cubeVerts[i].z <<= 5;
+    cubeVerts[i].x = (cubeVerts[i].x << 5) + (cubeVerts[i].x << 4);
+    cubeVerts[i].y = (cubeVerts[i].y << 5) + (cubeVerts[i].y << 4);
+    cubeVerts[i].z = (cubeVerts[i].z << 5) + (cubeVerts[i].z << 4);
   }
 
 // Map physical 0xA0000 into our flat address space
@@ -295,7 +273,7 @@ int main(void)
   // Simple animation loop
   while (!kbhit())
   {
-    EulerToMat(&mat, 256 + (t >> 2), 32 + (t >> 3), 111 + (t >> 4));
+    EulerToMat(&mat, 256 + t, 32 + (t >> 1), 111 + (t >> 2));
 
     memset(&back[0], 0, SIZE);
 
