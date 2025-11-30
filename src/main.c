@@ -201,14 +201,14 @@ int main(void)
   }
   current_time = time(NULL) - current_time;
 
-  printf("Returned to text mode. Program finished.\n");
-  printf("Elapsed time: %ld seconds\n", current_time);
-  printf("Frame rate: %.2f FPS\n", 1000.0 / (double)current_time);
-
   getch();
 
   // Back to text mode 3
   set_video_mode(0x03);
+
+  printf("Returned to text mode. Program finished.\n");
+  printf("Elapsed time: %ld seconds\n", current_time);
+  printf("Frame rate: %.2f FPS\n", 1000.0 / (double)current_time);
 
   return 0;
 }

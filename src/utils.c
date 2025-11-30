@@ -11,7 +11,7 @@ void set_video_mode(int mode)
 {
 #ifdef __DJGPP__
   __dpmi_regs r;
-  r.x.ax = 0x0013;
+  r.x.ax = mode;
   __dpmi_int(0x10, &r);
 #else // Watcom C/C++
   union REGS regs;
