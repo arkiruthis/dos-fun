@@ -96,13 +96,25 @@ void draw_line(fix x0, fix y0, fix x1, fix y1, unsigned char color)
 
 void draw_tris(V3D *verts, int triList[], unsigned char color)
 {
-  int i, j;
+  fix i, j, k;
+  fix short_dx, long_dx, lx, rx;
   V3D a, b, c;
+  unsigned char *ptr, *ptrEnd;
+
   for (i = 0; i < 12; ++i)
   {
+    color += i;
+
     a = verts[triList[i * 3 + 0]];
     b = verts[triList[i * 3 + 1]];
     c = verts[triList[i * 3 + 2]];
+
+    a.x += (WIDTH << 15);
+    a.y += (HEIGHT << 15);
+    b.x += (WIDTH << 15);
+    b.y += (HEIGHT << 15);
+    c.x += (WIDTH << 15);
+    c.y += (HEIGHT << 15);
 
     // Sort vertices by Y
     if (a.y > b.y)
@@ -133,9 +145,108 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
       c.x = j;
     }
 
-    draw_line(a.x, a.y, b.x, b.y, color);
-    draw_line(a.x, a.y, c.x, c.y, color);
-    draw_line(b.x, b.y, c.x, c.y, color);
+    int shortHeight = fix2int(b.y - a.y);
+    while (shortHeight > 256)
+    {
+      shortHeight >>= 1;
+    }
+    int longheight = fix2int(c.y - a.y);
+    while (longheight > 256)
+    {
+      longheight >>= 1;
+    }
+
+    long_dx = (c.x - a.x);
+    short_dx = (b.x - a.x);
+    long_dx = multOneOver(long_dx, longheight);
+    short_dx = multOneOver(short_dx, shortHeight);
+
+    if (long_dx < short_dx) // Left side long edge
+    {
+      lx = a.x;
+      rx = a.x;
+      ptr = &back[(a.y >> 16) * WIDTH];
+      while (shortHeight-- > 0)
+      {
+        j = lx >> 16;
+        k = rx >> 16;
+        do
+        {
+          *(ptr + j) = color;
+        } while ((++j) < k);
+
+        ptr += WIDTH;
+        lx += long_dx;
+        rx += short_dx;
+      };
+
+      shortHeight = fix2int(c.y - b.y);
+      while (shortHeight > 256)
+      {
+        shortHeight >>= 1;
+      }
+
+      short_dx = (c.x - b.x);
+      short_dx = multOneOver(short_dx, shortHeight);
+      rx = b.x;
+
+      while (shortHeight-- > 0)
+      {
+        j = lx >> 16;
+        k = rx >> 16;
+        do
+        {
+          *(ptr + j) = color;
+        } while ((++j) < k);
+
+        ptr += WIDTH;
+        lx += long_dx;
+        rx += short_dx;
+      };
+    }
+    else // Right side long edge
+    {
+      lx = a.x;
+      rx = a.x;
+      ptr = &back[(a.y >> 16) * WIDTH];
+      while (shortHeight-- > 0)
+      {
+        j = lx >> 16;
+        k = rx >> 16;
+        do
+        {
+          *(ptr + j) = color;
+        } while ((++j) < k);
+
+        ptr += WIDTH;
+        rx += long_dx;
+        lx += short_dx;
+      };
+
+      shortHeight = fix2int(c.y - b.y);
+      while (shortHeight > 256)
+      {
+        shortHeight >>= 1;
+      }
+
+      short_dx = (c.x - b.x);
+      short_dx = multOneOver(short_dx, shortHeight);
+      lx = b.x;
+
+      while (shortHeight-- > 0)
+      {
+        j = lx >> 16;
+        k = rx >> 16;
+        do
+        {
+          *(ptr + j) = color;
+        } while ((++j) < k);
+
+        ptr += WIDTH;
+        rx += long_dx;
+        lx += short_dx;
+      };
+    }
   }
 }
 
@@ -175,8 +286,8 @@ int main(void)
     outportb(0x03C6, 0xFF);   // Write mask
     outportb(0x03C8, i);      // Color index
     outportb(0x03C9, 0);      // Red
-    outportb(0x03C9, i >> 2); // Green
-    outportb(0x03C9, i >> 1); // Blue
+    outportb(0x03C9, i >> 1); // Green
+    outportb(0x03C9, i);      // Blue
   }
 
   current_time = time(NULL);
@@ -184,7 +295,7 @@ int main(void)
   // Simple animation loop
   while (!kbhit())
   {
-    EulerToMat(&mat, 256 + t, 32 + t, 111 + t);
+    EulerToMat(&mat, 256 + (t >> 2), 32 + (t >> 3), 111 + (t >> 4));
 
     memset(&back[0], 0, SIZE);
 
@@ -193,7 +304,7 @@ int main(void)
       MultV3DMat(&cubeVerts[i], &cubeTransformed[i], &mat);
     }
 
-    draw_tris(cubeTransformed, triList, 255);
+    draw_tris(cubeTransformed, triList, t);
 
     // Blit back buffer -> VGA in one go
     memcpy(vga, &back[0], SIZE);

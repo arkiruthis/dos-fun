@@ -49,7 +49,7 @@ typedef signed int fix;
 extern fix g_SineTable[];
 
 // Reciprocal table e.g., 1/a
-#define ONEOVERTABLE_SIZE 1024
+#define ONEOVERTABLE_SIZE 256
 #define oneover(a) g_oneOver[(a)]
 #define multOneOver(a, b) (fix)((a >> 16) * (oneover(b))) // Essentially INT * FIX, useful for reciprocal
 extern fix g_oneOver[];

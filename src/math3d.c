@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-fix g_oneOver[ONEOVERTABLE_SIZE];   // Reciprocal table (for max screen height of 256 in Mode 13)
-fix g_SineTable[SINETABLE_SIZE]; // SIN table. Offset used for COS.
+fix g_oneOver[ONEOVERTABLE_SIZE]; // Reciprocal table (for max screen height of 256 in Mode 13)
+fix g_SineTable[SINETABLE_SIZE];  // SIN table. Offset used for COS.
 
 void SetupTables()
 {
@@ -16,7 +16,7 @@ void SetupTables()
         g_oneOver[i] = 65536 / (float)i;
     }
 
-    g_oneOver[0] = float2fix(1.0f); // Basically a non-op if dividing by zero
+    g_oneOver[0] = 0; // Basically a non-op if dividing by zero
 
     // Setup sine table
     for (i = 0; i < SINETABLE_SIZE; ++i)
