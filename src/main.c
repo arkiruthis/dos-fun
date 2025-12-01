@@ -17,30 +17,17 @@
 
 static unsigned char back[SIZE];
 static V3D cubeVerts[8] = {
-    {-65536, -65536, -65536},
-    {65536, -65536, -65536},
-    {65536, 65536, -65536},
-    {-65536, 65536, -65536},
-    {-65536, -65536, 65536},
-    {65536, -65536, 65536},
-    {65536, 65536, 65536},
-    {-65536, 65536, 65536}};
+    {-65536, -65536, 65536},  // FRONT TOP LEFT
+    {65536, -65536, 65536},   // FRONT TOP RIGHT
+    {65536, 65536, 65536},    // FRONT BOTTOM RIGHT
+    {-65536, 65536, 65536},   // FRONT BOTTOM LEFT
+    {-65536, -65536, -65536}, // BACK TOP LEFT
+    {65536, -65536, -65536},  // BACK TOP RIGHT
+    {65536, 65536, -65536},   // BACK BOTTOM RIGHT
+    {-65536, 65536, -65536},  // BACK BOTTOM LEFT
+};
 
-// 12 edges of the cube (start and end vertex indices)
-static int edgeList[24] = {
-    0, 1,
-    1, 2,
-    2, 3,
-    3, 0,
-    4, 5,
-    5, 6,
-    6, 7,
-    7, 4,
-    0, 4,
-    1, 5,
-    2, 6,
-    3, 7};
-
+// CW FRONT
 static int triList[12 * 3] = {
     0, 1, 2,
     0, 2, 3,
@@ -103,11 +90,22 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
 
   for (i = 0; i < 12; ++i)
   {
-    color += i;
+    color = color + i;
 
     a = verts[triList[i * 3 + 0]];
     b = verts[triList[i * 3 + 1]];
     c = verts[triList[i * 3 + 2]];
+
+    // Shifting by 11 gets 65536 down to 64 which fits okay as a max 128 within 200 height
+    a.x = (a.x >> 11) + (a.x >> 12) + (WIDTH >> 1);
+    a.y = (a.y >> 11) + (a.y >> 12) + (HEIGHT >> 1);
+    b.x = (b.x >> 11) + (b.x >> 12) + (WIDTH >> 1);
+    b.y = (b.y >> 11) + (b.y >> 12) + (HEIGHT >> 1);
+    c.x = (c.x >> 11) + (c.x >> 12) + (WIDTH >> 1);
+    c.y = (c.y >> 11) + (c.y >> 12) + (HEIGHT >> 1);
+
+    if (orient2dint(a, b, c) > 0)
+      continue;
 
     // Sort vertices by Y
     if (a.y > b.y)
@@ -138,92 +136,97 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
       c.x = j;
     }
 
-    a.x = (a.x >> 16) + (WIDTH >> 1);
-    a.y = (a.y >> 16) + (HEIGHT >> 1);
-    b.x = (b.x >> 16) + (WIDTH >> 1);
-    b.y = (b.y >> 16) + (HEIGHT >> 1);
-    c.x = (c.x >> 16) + (WIDTH >> 1);
-    c.y = (c.y >> 16) + (HEIGHT >> 1);
-
     int shortHeight = b.y - a.y;
     int longHeight = c.y - a.y;
 
+    if (longHeight <= 0)
+      continue;
+
     long_dx = (c.x - a.x) * oneover(longHeight);
     short_dx = (b.x - a.x) * oneover(shortHeight);
+    lx = (a.x << 16);
+    rx = (a.x << 16);
+    ptr = &back[a.y * WIDTH];
 
-    if (long_dx < short_dx) // Left side long edge
+    if (shortHeight > 0) // Top Half
     {
-      lx = (a.x << 16);
-      rx = (a.x << 16);
-      ptr = &back[a.y * WIDTH];
-      while (--shortHeight > 0)
-      {
-        j = ((rx - lx) >> 16);
-        ptrEnd = ptr + (lx >> 16);
+      if (long_dx < short_dx)
+      { // Left side long edge
         do
         {
-          *ptrEnd++ = color;
-        } while (--j > 0);
+          j = ((rx - lx) >> 16);
+          ptrEnd = ptr + (lx >> 16);
+          while (j-- >= 0)
+          {
+            *ptrEnd++ = color + j;
+          }
 
-        ptr += WIDTH;
-        lx += long_dx;
-        rx += short_dx;
-      };
-
-      shortHeight = c.y - b.y;
-      short_dx = (c.x - b.x) * oneover(shortHeight);
-      rx = (b.x << 16);
-
-      while (--shortHeight > 0)
-      {
-        j = ((rx - lx) >> 16);
-        ptrEnd = ptr + (lx >> 16);
+          lx += long_dx;
+          rx += short_dx;
+          ptr += WIDTH;
+        } while (--shortHeight > 0);
+      }
+      else
+      { // Right side long edge
         do
         {
-          *ptrEnd++ = color;
-        } while (--j > 0);
+          j = ((rx - lx) >> 16);
+          ptrEnd = ptr + (lx >> 16);
+          while (j-- >= 0)
+          {
+            *ptrEnd++ = color + j;
+          }
 
-        ptr += WIDTH;
-        lx += long_dx;
-        rx += short_dx;
-      };
+          rx += long_dx;
+          lx += short_dx;
+          ptr += WIDTH;
+        } while (--shortHeight > 0);
+      }
     }
-    else // Right side long edge
+
+    // Bottom Half
+
+    shortHeight = c.y - b.y;
+    if (shortHeight > 0)
     {
-      lx = (a.x << 16);
-      rx = (a.x << 16);
-      ptr = &back[a.y * WIDTH];
-      while (--shortHeight > 0)
-      {
-        j = ((rx - lx) >> 16);
-        ptrEnd = ptr + (lx >> 16);
-        do
-        {
-          *ptrEnd++ = color;
-        } while (--j > 0);
-
-        ptr += WIDTH;
-        rx += long_dx;
-        lx += short_dx;
-      };
-
-      shortHeight = c.y - b.y;
       short_dx = (c.x - b.x) * oneover(shortHeight);
-      lx = (b.x << 16);
 
-      while (--shortHeight > 0)
-      {
-        j = ((rx - lx) >> 16);
-        ptrEnd = ptr + (lx >> 16);
+      if (short_dx < long_dx)
+      { // Left side long edge
+        rx = (b.x << 16);
+
         do
         {
-          *ptrEnd++ = color;
-        } while (--j > 0);
+          j = ((rx - lx) >> 16);
+          ptrEnd = ptr + (lx >> 16);
+          while (j-- >= 0)
+          {
+            *ptrEnd++ = color + j;
+          }
 
-        ptr += WIDTH;
-        rx += long_dx;
-        lx += short_dx;
-      };
+          lx += long_dx;
+          rx += short_dx;
+          ptr += WIDTH;
+        } while (--shortHeight > 0);
+      }
+      else
+      { // Right side long edge
+        lx = (b.x << 16);
+
+        do
+        {
+          j = ((rx - lx) >> 16);
+          ptrEnd = ptr + (lx >> 16);
+          while (j-- >= 0)
+          {
+            *ptrEnd++ = color + j;
+          }
+
+          rx += long_dx;
+          lx += short_dx;
+          ptr += WIDTH;
+        } while (--shortHeight > 0);
+      }
     }
   }
 }
@@ -241,12 +244,12 @@ int main(void)
 
   SetupTables();
 
-  for (i = 0; i < 8; ++i)
-  {
-    cubeVerts[i].x = (cubeVerts[i].x << 5) + (cubeVerts[i].x << 4);
-    cubeVerts[i].y = (cubeVerts[i].y << 5) + (cubeVerts[i].y << 4);
-    cubeVerts[i].z = (cubeVerts[i].z << 5) + (cubeVerts[i].z << 4);
-  }
+  // for (i = 0; i < 8; ++i)
+  // {
+  //   cubeVerts[i].x = (cubeVerts[i].x << 5) + (cubeVerts[i].x << 4);
+  //   cubeVerts[i].y = (cubeVerts[i].y << 5) + (cubeVerts[i].y << 4);
+  //   cubeVerts[i].z = (cubeVerts[i].z << 5) + (cubeVerts[i].z << 4);
+  // }
 
 // Map physical 0xA0000 into our flat address space
 #ifdef __DJGPP__
@@ -259,14 +262,14 @@ int main(void)
   // Set VGA mode 13h
   set_video_mode(0x13);
 
-  for (i = 0; i < 256; ++i)
-  {
-    outportb(0x03C6, 0xFF);   // Write mask
-    outportb(0x03C8, i);      // Color index
-    outportb(0x03C9, 0);      // Red
-    outportb(0x03C9, i >> 1); // Green
-    outportb(0x03C9, i);      // Blue
-  }
+  // for (i = 0; i < 256; ++i)
+  // {
+  //   outportb(0x03C6, 0xFF);   // Write mask
+  //   outportb(0x03C8, i);      // Color index
+  //   outportb(0x03C9, 0);      // Red
+  //   outportb(0x03C9, i >> 1); // Green
+  //   outportb(0x03C9, i);      // Blue
+  // }
 
   current_time = time(NULL);
 
@@ -274,6 +277,7 @@ int main(void)
   while (!kbhit())
   {
     EulerToMat(&mat, 256 + t, 32 + (t >> 1), 111 + (t >> 2));
+    // EulerToMat(&mat, 0, 0, 0);
 
     memset(&back[0], 0, SIZE);
 
@@ -282,7 +286,7 @@ int main(void)
       MultV3DMat(&cubeVerts[i], &cubeTransformed[i], &mat);
     }
 
-    draw_tris(cubeTransformed, triList, t);
+    draw_tris(cubeTransformed, triList, 1);
 
     // Blit back buffer -> VGA in one go
     memcpy(vga, &back[0], SIZE);
