@@ -244,13 +244,6 @@ int main(void)
 
   SetupTables();
 
-  // for (i = 0; i < 8; ++i)
-  // {
-  //   cubeVerts[i].x = (cubeVerts[i].x << 5) + (cubeVerts[i].x << 4);
-  //   cubeVerts[i].y = (cubeVerts[i].y << 5) + (cubeVerts[i].y << 4);
-  //   cubeVerts[i].z = (cubeVerts[i].z << 5) + (cubeVerts[i].z << 4);
-  // }
-
 // Map physical 0xA0000 into our flat address space
 #ifdef __DJGPP__
   __djgpp_nearptr_enable();
@@ -262,14 +255,14 @@ int main(void)
   // Set VGA mode 13h
   set_video_mode(0x13);
 
-  // for (i = 0; i < 256; ++i)
-  // {
-  //   outportb(0x03C6, 0xFF);   // Write mask
-  //   outportb(0x03C8, i);      // Color index
-  //   outportb(0x03C9, 0);      // Red
-  //   outportb(0x03C9, i >> 1); // Green
-  //   outportb(0x03C9, i);      // Blue
-  // }
+  for (i = 0; i < 256; ++i)
+  {
+    outportb(0x03C6, 0xFF);   // Write mask
+    outportb(0x03C8, i);      // Color index
+    outportb(0x03C9, 0);      // Red
+    outportb(0x03C9, i >> 1); // Green
+    outportb(0x03C9, i);      // Blue
+  }
 
   current_time = time(NULL);
 
