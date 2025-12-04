@@ -81,6 +81,19 @@ void draw_line(fix x0, fix y0, fix x1, fix y1, unsigned char color)
   }
 }
 
+void hline(int length, fix c1, fix c2, unsigned char *ptr)
+{
+  fix xstep = (c2 - c1) * oneover(length);
+
+  c1 <<= 16;
+
+  do
+  {
+    *ptr++ = (c1 >> 16);
+    c1 += xstep;
+  } while (length-- > 0);
+}
+
 void draw_tris(V3D *verts, int triList[], unsigned char color)
 {
   fix i, j, k;
@@ -156,10 +169,7 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
         {
           j = ((rx - lx) >> 16);
           ptrEnd = ptr + (lx >> 16);
-          while (j-- >= 0)
-          {
-            *ptrEnd++ = color + j;
-          }
+          hline(j, 1, 31, ptrEnd);
 
           lx += long_dx;
           rx += short_dx;
@@ -172,10 +182,7 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
         {
           j = ((rx - lx) >> 16);
           ptrEnd = ptr + (lx >> 16);
-          while (j-- >= 0)
-          {
-            *ptrEnd++ = color + j;
-          }
+          hline(j, 1, 31, ptrEnd);
 
           rx += long_dx;
           lx += short_dx;
@@ -199,10 +206,7 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
         {
           j = ((rx - lx) >> 16);
           ptrEnd = ptr + (lx >> 16);
-          while (j-- >= 0)
-          {
-            *ptrEnd++ = color + j;
-          }
+          hline(j, 1, 31, ptrEnd);
 
           lx += long_dx;
           rx += short_dx;
@@ -217,10 +221,7 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
         {
           j = ((rx - lx) >> 16);
           ptrEnd = ptr + (lx >> 16);
-          while (j-- >= 0)
-          {
-            *ptrEnd++ = color + j;
-          }
+          hline(j, 1, 31, ptrEnd);
 
           rx += long_dx;
           lx += short_dx;
@@ -255,13 +256,22 @@ int main(void)
   // Set VGA mode 13h
   set_video_mode(0x13);
 
+  outportb(0x03C6, 0xFF); // Write mask
   for (i = 0; i < 256; ++i)
   {
-    outportb(0x03C6, 0xFF);   // Write mask
-    outportb(0x03C8, i);      // Color index
-    outportb(0x03C9, 0);      // Red
-    outportb(0x03C9, i >> 1); // Green
-    outportb(0x03C9, i);      // Blue
+    outportb(0x03C8, i); // Color index
+    if (i > 0 && i < 32)
+    {
+      outportb(0x03C9, 31 + i); // Red
+      outportb(0x03C9, 15 + i); // Green
+      outportb(0x03C9, i);      // Blue
+    }
+    else
+    {
+      outportb(0x03C9, 0);      // Red
+      outportb(0x03C9, i >> 1); // Green
+      outportb(0x03C9, i);      // Blue
+    }
   }
 
   current_time = time(NULL);
