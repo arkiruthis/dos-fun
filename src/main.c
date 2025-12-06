@@ -16,31 +16,32 @@
 #define SIZE (WIDTH * HEIGHT)
 
 static unsigned char back[SIZE];
+
 static V4D cubeVerts[8] = {
-    {-65536, -65536, 65536, 1},  // FRONT TOP LEFT
-    {65536, -65536, 65536, 1},   // FRONT TOP RIGHT
-    {65536, 65536, 65536, 1},    // FRONT BOTTOM RIGHT
-    {-65536, 65536, 65536, 1},  // FRONT BOTTOM LEFT
+    {-65536, -65536, 65536, 1},   // FRONT TOP LEFT
+    {65536, -65536, 65536, 1},    // FRONT TOP RIGHT
+    {65536, 65536, 65536, 1},     // FRONT BOTTOM RIGHT
+    {-65536, 65536, 65536, 1},    // FRONT BOTTOM LEFT
     {-65536, -65536, -65536, 15}, // BACK TOP LEFT
     {65536, -65536, -65536, 15},  // BACK TOP RIGHT
-    {65536, 65536, -65536, 15},  // BACK BOTTOM RIGHT
-    {-65536, 65536, -65536, 15}, // BACK BOTTOM LEFT
+    {65536, 65536, -65536, 15},   // BACK BOTTOM RIGHT
+    {-65536, 65536, -65536, 15},  // BACK BOTTOM LEFT
 };
 
-// CW FRONT
+// Clockwise winding
 static int triList[12 * 3] = {
     0, 1, 2, // FR 1
     0, 2, 3, // FR 2
-    4, 6, 5, // BK 1
-    4, 7, 6, // BK 2
-    0, 3, 7, // LT 1
-    0, 7, 4, // LT 2
+    5, 4, 7, // BK 1
+    5, 7, 6, // BK 2
+    4, 0, 3, // LT 1
+    4, 3, 7, // LT 2
     1, 5, 6, // RT 1
     1, 6, 2, // RT 2
     3, 2, 6, // BT 1
     3, 6, 7, // BT 2
-    0, 4, 5, // TP 1
-    0, 5, 1  // TP 2
+    4, 5, 1, // TP 1
+    4, 1, 0  // TP 2
 };
 
 void draw_line(fix x0, fix y0, fix x1, fix y1, unsigned char color)
@@ -97,6 +98,7 @@ void draw_tris(V4D *verts, int triList[])
 {
   fix i, j, k;
   fix short_dx, long_dx, lx, rx;
+  fix long_cx, short_cx, lc, rc;
   V4D a, b, c;
   unsigned char *ptr, *ptrEnd;
 
@@ -126,6 +128,9 @@ void draw_tris(V4D *verts, int triList[])
       j = a.x;
       a.x = b.x;
       b.x = j;
+      j = a.w;
+      a.w = b.w;
+      b.w = j;
     }
     if (a.y > c.y)
     {
@@ -135,6 +140,9 @@ void draw_tris(V4D *verts, int triList[])
       j = a.x;
       a.x = c.x;
       c.x = j;
+      j = a.w;
+      a.w = c.w;
+      c.w = j;
     }
     if (b.y > c.y)
     {
@@ -144,6 +152,9 @@ void draw_tris(V4D *verts, int triList[])
       j = b.x;
       b.x = c.x;
       c.x = j;
+      j = b.w;
+      b.w = c.w;
+      c.w = j;
     }
 
     int shortHeight = b.y - a.y;
@@ -156,11 +167,10 @@ void draw_tris(V4D *verts, int triList[])
     short_dx = (b.x - a.x) * oneover(shortHeight);
     lx = (a.x << 16);
     rx = (a.x << 16);
-    fix lc, rc, long_cx, short_cx;
-    lc = (a.w << 16);
-    rc = (a.w << 16);
     long_cx = (c.w - a.w) * oneover(longHeight);
     short_cx = (b.w - a.w) * oneover(shortHeight);
+    lc = (a.w << 16);
+    rc = (a.w << 16);
     ptr = &back[a.y * WIDTH];
 
     if (shortHeight > 0) // Top Half
@@ -214,7 +224,7 @@ void draw_tris(V4D *verts, int triList[])
           j = ((rx - lx) >> 16);
           ptrEnd = ptr + (lx >> 16);
           hline(j, lc, rc, ptrEnd);
-          
+
           lx += long_dx;
           rx += short_dx;
           ptr += WIDTH;
