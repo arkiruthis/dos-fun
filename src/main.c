@@ -196,7 +196,7 @@ void draw_tris(V4D *verts, int triList[])
         {
           j = ((rx - lx) >> 16);
           ptrEnd = ptr + (lx >> 16);
-          hline(j, rc, lc, ptrEnd);
+          hline(j, lc, rc, ptrEnd);
 
           rx += long_dx;
           lx += short_dx;
@@ -213,6 +213,7 @@ void draw_tris(V4D *verts, int triList[])
     if (shortHeight > 0)
     {
       short_dx = (c.x - b.x) * oneover(shortHeight);
+      short_cx = (c.w - b.w) * oneover(shortHeight);
 
       if (short_dx < long_dx)
       { // Left side long edge
@@ -227,6 +228,8 @@ void draw_tris(V4D *verts, int triList[])
 
           lx += long_dx;
           rx += short_dx;
+          lc += long_cx;
+          rc += short_cx;
           ptr += WIDTH;
         } while (--shortHeight > 0);
       }
@@ -239,10 +242,12 @@ void draw_tris(V4D *verts, int triList[])
         {
           j = ((rx - lx) >> 16);
           ptrEnd = ptr + (lx >> 16);
-          hline(j, rc, lc, ptrEnd);
+          hline(j, lc, rc, ptrEnd);
 
           rx += long_dx;
           lx += short_dx;
+          rc += long_cx;
+          lc += short_cx;
           ptr += WIDTH;
         } while (--shortHeight > 0);
       }
