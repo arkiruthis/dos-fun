@@ -16,31 +16,32 @@
 #define SIZE (WIDTH * HEIGHT)
 
 static unsigned char back[SIZE];
-static V3D cubeVerts[8] = {
-    {-65536, -65536, 65536},  // FRONT TOP LEFT
-    {65536, -65536, 65536},   // FRONT TOP RIGHT
-    {65536, 65536, 65536},    // FRONT BOTTOM RIGHT
-    {-65536, 65536, 65536},   // FRONT BOTTOM LEFT
-    {-65536, -65536, -65536}, // BACK TOP LEFT
-    {65536, -65536, -65536},  // BACK TOP RIGHT
-    {65536, 65536, -65536},   // BACK BOTTOM RIGHT
-    {-65536, 65536, -65536},  // BACK BOTTOM LEFT
+static V4D cubeVerts[8] = {
+    {-65536, -65536, 65536, 1},  // FRONT TOP LEFT
+    {65536, -65536, 65536, 1},   // FRONT TOP RIGHT
+    {65536, 65536, 65536, 1},    // FRONT BOTTOM RIGHT
+    {-65536, 65536, 65536, 1},  // FRONT BOTTOM LEFT
+    {-65536, -65536, -65536, 15}, // BACK TOP LEFT
+    {65536, -65536, -65536, 15},  // BACK TOP RIGHT
+    {65536, 65536, -65536, 15},  // BACK BOTTOM RIGHT
+    {-65536, 65536, -65536, 15}, // BACK BOTTOM LEFT
 };
 
 // CW FRONT
 static int triList[12 * 3] = {
-    0, 1, 2,
-    0, 2, 3,
-    1, 5, 6,
-    1, 6, 2,
-    5, 4, 7,
-    5, 7, 6,
-    4, 0, 3,
-    4, 3, 7,
-    3, 2, 6,
-    3, 6, 7,
-    4, 5, 1,
-    4, 1, 0};
+    0, 1, 2, // FR 1
+    0, 2, 3, // FR 2
+    4, 6, 5, // BK 1
+    4, 7, 6, // BK 2
+    0, 3, 7, // LT 1
+    0, 7, 4, // LT 2
+    1, 5, 6, // RT 1
+    1, 6, 2, // RT 2
+    3, 2, 6, // BT 1
+    3, 6, 7, // BT 2
+    0, 4, 5, // TP 1
+    0, 5, 1  // TP 2
+};
 
 void draw_line(fix x0, fix y0, fix x1, fix y1, unsigned char color)
 {
@@ -83,9 +84,7 @@ void draw_line(fix x0, fix y0, fix x1, fix y1, unsigned char color)
 
 void hline(int length, fix c1, fix c2, unsigned char *ptr)
 {
-  fix xstep = (c2 - c1) * oneover(length);
-
-  c1 <<= 16;
+  fix xstep = (((c2 - c1) >> 16) + 1) * oneover(length);
 
   do
   {
@@ -94,20 +93,18 @@ void hline(int length, fix c1, fix c2, unsigned char *ptr)
   } while (length-- > 0);
 }
 
-void draw_tris(V3D *verts, int triList[], unsigned char color)
+void draw_tris(V4D *verts, int triList[])
 {
   fix i, j, k;
   fix short_dx, long_dx, lx, rx;
-  V3D a, b, c;
+  V4D a, b, c;
   unsigned char *ptr, *ptrEnd;
 
   for (i = 0; i < 12; ++i)
   {
-    color = color + i;
-
-    a = verts[triList[i * 3 + 0]];
-    b = verts[triList[i * 3 + 1]];
-    c = verts[triList[i * 3 + 2]];
+    a = verts[triList[(i * 3) + 0]];
+    b = verts[triList[(i * 3) + 1]];
+    c = verts[triList[(i * 3) + 2]];
 
     // Shifting by 11 gets 65536 down to 64 which fits okay as a max 128 within 200 height
     a.x = (a.x >> 11) + (a.x >> 12) + (WIDTH >> 1);
@@ -159,6 +156,11 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
     short_dx = (b.x - a.x) * oneover(shortHeight);
     lx = (a.x << 16);
     rx = (a.x << 16);
+    fix lc, rc, long_cx, short_cx;
+    lc = (a.w << 16);
+    rc = (a.w << 16);
+    long_cx = (c.w - a.w) * oneover(longHeight);
+    short_cx = (b.w - a.w) * oneover(shortHeight);
     ptr = &back[a.y * WIDTH];
 
     if (shortHeight > 0) // Top Half
@@ -169,10 +171,12 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
         {
           j = ((rx - lx) >> 16);
           ptrEnd = ptr + (lx >> 16);
-          hline(j, 1, 31, ptrEnd);
+          hline(j, lc, rc, ptrEnd);
 
           lx += long_dx;
           rx += short_dx;
+          lc += long_cx;
+          rc += short_cx;
           ptr += WIDTH;
         } while (--shortHeight > 0);
       }
@@ -182,10 +186,12 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
         {
           j = ((rx - lx) >> 16);
           ptrEnd = ptr + (lx >> 16);
-          hline(j, 1, 31, ptrEnd);
+          hline(j, rc, lc, ptrEnd);
 
           rx += long_dx;
           lx += short_dx;
+          rc += long_cx;
+          lc += short_cx;
           ptr += WIDTH;
         } while (--shortHeight > 0);
       }
@@ -201,13 +207,14 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
       if (short_dx < long_dx)
       { // Left side long edge
         rx = (b.x << 16);
+        rc = (b.w << 16);
 
         do
         {
           j = ((rx - lx) >> 16);
           ptrEnd = ptr + (lx >> 16);
-          hline(j, 1, 31, ptrEnd);
-
+          hline(j, lc, rc, ptrEnd);
+          
           lx += long_dx;
           rx += short_dx;
           ptr += WIDTH;
@@ -216,12 +223,13 @@ void draw_tris(V3D *verts, int triList[], unsigned char color)
       else
       { // Right side long edge
         lx = (b.x << 16);
+        lc = (b.w << 16);
 
         do
         {
           j = ((rx - lx) >> 16);
           ptrEnd = ptr + (lx >> 16);
-          hline(j, 1, 31, ptrEnd);
+          hline(j, rc, lc, ptrEnd);
 
           rx += long_dx;
           lx += short_dx;
@@ -240,7 +248,7 @@ int main(void)
   int t = 0;
   time_t current_time;
 
-  V3D cubeTransformed[8];
+  V4D cubeTransformed[8];
   MAT43 mat = {0};
 
   SetupTables();
@@ -286,10 +294,10 @@ int main(void)
 
     for (i = 0; i < 8; ++i)
     {
-      MultV3DMat(&cubeVerts[i], &cubeTransformed[i], &mat);
+      MultV4DMatC(&cubeVerts[i], &cubeTransformed[i], &mat);
     }
 
-    draw_tris(cubeTransformed, triList, 1);
+    draw_tris(cubeTransformed, triList);
 
     // Blit back buffer -> VGA in one go
     memcpy(vga, &back[0], SIZE);

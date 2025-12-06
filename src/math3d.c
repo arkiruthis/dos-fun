@@ -200,6 +200,14 @@ void MultV3DMat(V3D *v, V3D *dest, MAT43 *mat)
     dest->z = fixmult(v->x, mat->m31) + fixmult(v->y, mat->m32) + fixmult(v->z, mat->m33) + mat->tz;
 }
 
+void MultV4DMatC(V4D *v, V4D *dest, MAT43 *mat)
+{
+    dest->x = fixmult(v->x, mat->m11) + fixmult(v->y, mat->m12) + fixmult(v->z, mat->m13) + mat->tx;
+    dest->y = fixmult(v->x, mat->m21) + fixmult(v->y, mat->m22) + fixmult(v->z, mat->m23) + mat->ty;
+    dest->z = fixmult(v->x, mat->m31) + fixmult(v->y, mat->m32) + fixmult(v->z, mat->m33) + mat->tz;
+    dest->w = v->w;
+}
+
 void MultV4DMat(V4D *v, V4D *dest, MAT44 *mat)
 {
     dest->x = fixmult(v->x, mat->m11) + fixmult(v->y, mat->m12) + fixmult(v->z, mat->m13) + fixmult(v->w, mat->m14);
