@@ -44,45 +44,6 @@ static int triList[12 * 3] = {
     4, 1, 0  // TP 2
 };
 
-void draw_line(fix x0, fix y0, fix x1, fix y1, unsigned char color)
-{
-  int i, j, height;
-  fix dx, dy;
-  unsigned char *ptr;
-
-  x0 += int2fix(WIDTH / 2);
-  y0 += int2fix(HEIGHT / 2);
-  x1 += int2fix(WIDTH / 2);
-  y1 += int2fix(HEIGHT / 2);
-
-  dx = x1 - x0;
-  height = (y1 - y0) >> 16;
-  if (height == 0) // flat line
-  {
-    x0 >>= 16;
-    x1 >>= 16;
-    ptr = &back[(y0 >> 16) * WIDTH];
-    ptr += (x0 < x1) ? x0 : x1;
-    height = abs(dx >> 16);
-    do
-    {
-      *ptr++ = color;
-    } while (height-- > 0);
-  }
-  else
-  {
-    dx = fixdiv(dx, (y1 - y0));
-    ptr = &back[(y0 >> 16) * WIDTH];
-    do
-    {
-      ptr += (x0 >> 16);
-      *ptr = color;
-      ptr += WIDTH - (x0 >> 16);
-      x0 += dx;
-    } while (height-- > 0);
-  }
-}
-
 void hline(int length, fix c1, fix c2, unsigned char *ptr)
 {
   fix xstep = (((c2 - c1) >> 16) + 1) * oneover(length);
@@ -111,10 +72,13 @@ void draw_tris(V4D *verts, int triList[])
     // Shifting by 11 gets 65536 down to 64 which fits okay as a max 128 within 200 height
     a.x = (a.x >> 11) + (a.x >> 12) + (WIDTH >> 1);
     a.y = (a.y >> 11) + (a.y >> 12) + (HEIGHT >> 1);
+    a.z = 32 - (a.z >> 12);
     b.x = (b.x >> 11) + (b.x >> 12) + (WIDTH >> 1);
     b.y = (b.y >> 11) + (b.y >> 12) + (HEIGHT >> 1);
+    b.z = 32 - (b.z >> 12);
     c.x = (c.x >> 11) + (c.x >> 12) + (WIDTH >> 1);
     c.y = (c.y >> 11) + (c.y >> 12) + (HEIGHT >> 1);
+    c.z = 32 - (c.z >> 12);
 
     if (orient2dint(a, b, c) > 0)
       continue;
@@ -128,9 +92,9 @@ void draw_tris(V4D *verts, int triList[])
       j = a.x;
       a.x = b.x;
       b.x = j;
-      j = a.w;
-      a.w = b.w;
-      b.w = j;
+      j = a.z;
+      a.z = b.z;
+      b.z = j;
     }
     if (a.y > c.y)
     {
@@ -140,9 +104,9 @@ void draw_tris(V4D *verts, int triList[])
       j = a.x;
       a.x = c.x;
       c.x = j;
-      j = a.w;
-      a.w = c.w;
-      c.w = j;
+      j = a.z;
+      a.z = c.z;
+      c.z = j;
     }
     if (b.y > c.y)
     {
@@ -152,9 +116,9 @@ void draw_tris(V4D *verts, int triList[])
       j = b.x;
       b.x = c.x;
       c.x = j;
-      j = b.w;
-      b.w = c.w;
-      c.w = j;
+      j = b.z;
+      b.z = c.z;
+      c.z = j;
     }
 
     int shortHeight = b.y - a.y;
@@ -167,10 +131,10 @@ void draw_tris(V4D *verts, int triList[])
     short_dx = (b.x - a.x) * oneover(shortHeight);
     lx = (a.x << 16);
     rx = (a.x << 16);
-    long_cx = (c.w - a.w) * oneover(longHeight);
-    short_cx = (b.w - a.w) * oneover(shortHeight);
-    lc = (a.w << 16);
-    rc = (a.w << 16);
+    long_cx = (c.z - a.z) * oneover(longHeight);
+    short_cx = (b.z - a.z) * oneover(shortHeight);
+    lc = (a.z << 16);
+    rc = (a.z << 16);
     ptr = &back[a.y * WIDTH];
 
     if (shortHeight > 0) // Top Half
@@ -213,12 +177,12 @@ void draw_tris(V4D *verts, int triList[])
     if (shortHeight > 0)
     {
       short_dx = (c.x - b.x) * oneover(shortHeight);
-      short_cx = (c.w - b.w) * oneover(shortHeight);
+      short_cx = (c.z - b.z) * oneover(shortHeight);
 
       if (short_dx < long_dx)
       { // Left side long edge
         rx = (b.x << 16);
-        rc = (b.w << 16);
+        rc = (b.z << 16);
 
         do
         {
@@ -236,7 +200,7 @@ void draw_tris(V4D *verts, int triList[])
       else
       { // Right side long edge
         lx = (b.x << 16);
-        lc = (b.w << 16);
+        lc = (b.z << 16);
 
         do
         {
@@ -280,21 +244,12 @@ int main(void)
   set_video_mode(0x13);
 
   outportb(0x03C6, 0xFF); // Write mask
-  for (i = 0; i < 256; ++i)
+  for (i = 0; i < 64; ++i)
   {
     outportb(0x03C8, i); // Color index
-    if (i > 0 && i < 32)
-    {
-      outportb(0x03C9, 31 + i); // Red
-      outportb(0x03C9, 15 + i); // Green
-      outportb(0x03C9, i);      // Blue
-    }
-    else
-    {
-      outportb(0x03C9, 0);      // Red
-      outportb(0x03C9, i >> 1); // Green
-      outportb(0x03C9, i);      // Blue
-    }
+    outportb(0x03C9, i); // Red
+    outportb(0x03C9, i >> 1); // Green
+    outportb(0x03C9, i >> 2); // Blue
   }
 
   current_time = time(NULL);
