@@ -72,13 +72,13 @@ void draw_tris(V4D *verts, int triList[])
     // Shifting by 11 gets 65536 down to 64 which fits okay as a max 128 within 200 height
     a.x = (a.x >> 11) + (a.x >> 12) + (WIDTH >> 1);
     a.y = (a.y >> 11) + (a.y >> 12) + (HEIGHT >> 1);
-    a.z = min(max(32 - (a.z >> 11), 0), 63);
+    a.z = min(max(24 - (a.z >> 13), 0), 63);
     b.x = (b.x >> 11) + (b.x >> 12) + (WIDTH >> 1);
     b.y = (b.y >> 11) + (b.y >> 12) + (HEIGHT >> 1);
-    b.z = min(max(32 - (b.z >> 11), 0), 63);
+    b.z = min(max(24 - (b.z >> 13), 0), 63);
     c.x = (c.x >> 11) + (c.x >> 12) + (WIDTH >> 1);
     c.y = (c.y >> 11) + (c.y >> 12) + (HEIGHT >> 1);
-    c.z = min(max(32 - (c.z >> 11), 0), 63);
+    c.z = min(max(24 - (c.z >> 13), 0), 63);
 
     if (orient2dint(a, b, c) > 0)
       continue;
@@ -247,8 +247,8 @@ int main(void)
   for (i = 0; i < 64; ++i)
   {
     outportb(0x03C8, i);               // Color index
-    outportb(0x03C9, min(i >> 1, 63));      // Red
-    outportb(0x03C9, min(i, 63)); // Green
+    outportb(0x03C9, min(i >> 1, 63)); // Red
+    outportb(0x03C9, min(i, 63));      // Green
     outportb(0x03C9, min(i >> 2, 63)); // Blue
   }
 
