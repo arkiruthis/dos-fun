@@ -72,13 +72,13 @@ void draw_tris(V4D *verts, int triList[])
     // Shifting by 11 gets 65536 down to 64 which fits okay as a max 128 within 200 height
     a.x = (a.x >> 11) + (a.x >> 12) + (WIDTH >> 1);
     a.y = (a.y >> 11) + (a.y >> 12) + (HEIGHT >> 1);
-    a.z = min(max(64 - (a.z >> 10), 0), 127);
+    a.z = min(max(32 - (a.z >> 11), 0), 63);
     b.x = (b.x >> 11) + (b.x >> 12) + (WIDTH >> 1);
     b.y = (b.y >> 11) + (b.y >> 12) + (HEIGHT >> 1);
-    b.z = min(max(64 - (b.z >> 10), 0), 127);
+    b.z = min(max(32 - (b.z >> 11), 0), 63);
     c.x = (c.x >> 11) + (c.x >> 12) + (WIDTH >> 1);
     c.y = (c.y >> 11) + (c.y >> 12) + (HEIGHT >> 1);
-    c.z = min(max(64 - (c.z >> 10), 0), 127);
+    c.z = min(max(32 - (c.z >> 11), 0), 63);
 
     if (orient2dint(a, b, c) > 0)
       continue;
@@ -244,11 +244,11 @@ int main(void)
   set_video_mode(0x13);
 
   outportb(0x03C6, 0xFF); // Write mask
-  for (i = 0; i < 128; ++i)
+  for (i = 0; i < 64; ++i)
   {
     outportb(0x03C8, i);               // Color index
-    outportb(0x03C9, min(i, 63));      // Red
-    outportb(0x03C9, min(i >> 1, 63)); // Green
+    outportb(0x03C9, min(i >> 1, 63));      // Red
+    outportb(0x03C9, min(i, 63)); // Green
     outportb(0x03C9, min(i >> 2, 63)); // Blue
   }
 
@@ -257,7 +257,7 @@ int main(void)
   // Simple animation loop
   while (!kbhit())
   {
-    EulerToMat(&mat, 256 + t, 32 + (t >> 1), 111 + (t >> 2));
+    EulerToMat(&mat, 256 + t, 55 + t, 77 + (t >> 2));
     // EulerToMat(&mat, 0, 0, 0);
 
     memset(&back[0], 0, SIZE);
