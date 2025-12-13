@@ -13,7 +13,7 @@ void SetupTables()
     // Setup reciprocal table
     for (i = 1; i < ONEOVERTABLE_SIZE; ++i)
     {
-        g_oneOver[i] = 65536 / (float)i;
+        g_oneOver[i] = 256.f / i;
     }
 
     g_oneOver[0] = 0; // Basically a non-op if dividing by zero
@@ -27,15 +27,15 @@ void SetupTables()
 
 void SetIdentity(MAT43 *mat)
 {
-    mat->m11 = 65536;
+    mat->m11 = 256;
     mat->m12 = 0;
     mat->m13 = 0;
     mat->m21 = 0;
-    mat->m22 = 65536;
+    mat->m22 = 256;
     mat->m23 = 0;
     mat->m31 = 0;
     mat->m32 = 0;
-    mat->m33 = 65536;
+    mat->m33 = 256;
     mat->tx = 0;
     mat->ty = 0;
     mat->tz = 0;
@@ -83,7 +83,7 @@ void RotateAxis(MAT43 *mat, V3D *axis, int angle)
     fix s, c, a, ax, ay, az;
     s = fixsin(angle);
     c = fixcos(angle);
-    a = 65536 - c;
+    a = 256 - c;
     ax = fixmult(a, axis->x);
     ay = fixmult(a, axis->y);
     az = fixmult(a, axis->z);
@@ -107,7 +107,7 @@ void RotateX(MAT43 *mat, int angle)
     s = fixsin(angle);
     c = fixcos(angle);
 
-    mat->m11 = 65536;
+    mat->m11 = 256;
     mat->m12 = 0;
     mat->m13 = 0;
     mat->m21 = 0;
@@ -129,7 +129,7 @@ void RotateY(MAT43 *mat, int angle)
     mat->m12 = 0;
     mat->m13 = -s;
     mat->m21 = 0;
-    mat->m22 = 65536;
+    mat->m22 = 256;
     mat->m23 = 0;
     mat->m31 = s;
     mat->m32 = 0;
@@ -202,9 +202,9 @@ void MultV3DMat(V3D *v, V3D *dest, MAT43 *mat)
 
 void MultV4DMatC(V4D *v, V4D *dest, MAT43 *mat)
 {
-    dest->x = fixmult(v->x, mat->m11) + fixmult(v->y, mat->m12) + fixmult(v->z, mat->m13) + mat->tx;
-    dest->y = fixmult(v->x, mat->m21) + fixmult(v->y, mat->m22) + fixmult(v->z, mat->m23) + mat->ty;
-    dest->z = fixmult(v->x, mat->m31) + fixmult(v->y, mat->m32) + fixmult(v->z, mat->m33) + mat->tz;
+    dest->x = fixmultINTL(v->x, mat->m11) + fixmultINTL(v->y, mat->m12) + fixmultINTL(v->z, mat->m13) + mat->tx;
+    dest->y = fixmultINTL(v->x, mat->m21) + fixmultINTL(v->y, mat->m22) + fixmultINTL(v->z, mat->m23) + mat->ty;
+    dest->z = fixmultINTL(v->x, mat->m31) + fixmultINTL(v->y, mat->m32) + fixmultINTL(v->z, mat->m33) + mat->tz;
     dest->w = v->w;
 }
 
@@ -241,7 +241,7 @@ void LookAt(const V3D *eyePos, const V3D *forward, MAT43 *mat)
 
     // Define the up vector (world's up)
     up.x = 0;
-    up.y = 65536;
+    up.y = 256;
     up.z = 0;
 
     // Calculate the right vector (perpendicular to forward and up)
@@ -284,7 +284,7 @@ void PerspectiveProjection(MAT44 *mat, float fov, float aspect, float znear, flo
     mat->m31 = 0;
     mat->m32 = 0;
     mat->m33 = float2fix(zfar / (zfar - znear));
-    mat->m34 = 65535;
+    mat->m34 = 256;
 
     mat->m41 = 0;
     mat->m42 = 0;

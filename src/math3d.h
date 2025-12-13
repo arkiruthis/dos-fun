@@ -21,13 +21,13 @@
 typedef signed int fix;
 
 // Fixed point utilities
-#define int2fix(x) ((x) << 16)
-#define fix2int(x) ((x) >> 16)
-#define float2fix(a) (fix)((a) * 65536.f)
-#define fix2float(a) (float)((a) / 65536.f)
-#define fixmult(a, b) (fix)(((a) >> 8) * ((b) >> 8))
-#define fixmultINTL(a, b) (fix)(((a) >> 16) * (b))
-#define fixdiv(a, b) (fix)(((a) << 8) / ((b) >> 8)) // NOTE - slow
+#define int2fix(x) ((x) << 8)
+#define fix2int(x) ((x) >> 8)
+#define float2fix(a) (fix)((a) * 256.f)
+#define fix2float(a) (float)((a) / 256.f)
+#define fixmult(a, b) (fix)(((a) >> 4) * ((b) >> 4))
+#define fixmultINTL(a, b) (fix)((a * b) >> 8)
+// #define fixdiv(a, b) (fix)(((a) << 8) / ((b) >> 8)) // NOTE - slow
 
 #ifndef min
 #define min(x, y) ((x) < (y) ? (x) : (y))
@@ -51,7 +51,7 @@ extern fix g_SineTable[];
 // Reciprocal table e.g., 1/a
 #define ONEOVERTABLE_SIZE 256
 #define oneover(a) g_oneOver[(a)]
-#define multOneOver(a, b) (fix)((a >> 16) * (oneover(b))) // Essentially INT * FIX, useful for reciprocal
+#define multOneOver(a, b) (fix)((a >> 8) * (oneover(b))) // Essentially INT * FIX, useful for reciprocal
 extern fix g_oneOver[];
 
 // Edge list buffers

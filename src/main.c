@@ -18,14 +18,14 @@
 static unsigned char back[SIZE];
 
 static V4D cubeVerts[8] = {
-    {-65536, -65536, 65536, 1},   // FRONT TOP LEFT
-    {65536, -65536, 65536, 1},    // FRONT TOP RIGHT
-    {65536, 65536, 65536, 1},     // FRONT BOTTOM RIGHT
-    {-65536, 65536, 65536, 1},    // FRONT BOTTOM LEFT
-    {-65536, -65536, -65536, 15}, // BACK TOP LEFT
-    {65536, -65536, -65536, 15},  // BACK TOP RIGHT
-    {65536, 65536, -65536, 15},   // BACK BOTTOM RIGHT
-    {-65536, 65536, -65536, 15},  // BACK BOTTOM LEFT
+    {-128, -128, 128, 1},   // FRONT TOP LEFT
+    {128, -128, 128, 1},    // FRONT TOP RIGHT
+    {128, 128, 128, 1},     // FRONT BOTTOM RIGHT
+    {-128, 128, 128, 1},    // FRONT BOTTOM LEFT
+    {-128, -128, -128, 15}, // BACK TOP LEFT
+    {128, -128, -128, 15},  // BACK TOP RIGHT
+    {128, 128, -128, 15},   // BACK BOTTOM RIGHT
+    {-128, 128, -128, 15},  // BACK BOTTOM LEFT
 };
 
 // Clockwise winding
@@ -46,11 +46,11 @@ static int triList[12 * 3] = {
 
 void hline(int length, fix c1, fix c2, unsigned char *ptr)
 {
-  fix xstep = (((c2 - c1) >> 16) + 1) * oneover(length);
+  fix xstep = (((c2 - c1) >> 8) + 1) * oneover(length);
 
   do
   {
-    *ptr++ = (c1 >> 16);
+    *ptr++ = (c1 >> 8);
     c1 += xstep;
   } while (length-- > 0);
 }
@@ -70,15 +70,15 @@ void draw_tris(V4D *verts, int triList[])
     c = verts[triList[(i * 3) + 2]];
 
     // Shifting by 11 gets 65536 down to 64 which fits okay as a max 128 within 200 height
-    a.x = (a.x >> 11) + (a.x >> 12) + (WIDTH >> 1);
-    a.y = (a.y >> 11) + (a.y >> 12) + (HEIGHT >> 1);
-    a.z = min(max(24 - (a.z >> 13), 0), 63);
-    b.x = (b.x >> 11) + (b.x >> 12) + (WIDTH >> 1);
-    b.y = (b.y >> 11) + (b.y >> 12) + (HEIGHT >> 1);
-    b.z = min(max(24 - (b.z >> 13), 0), 63);
-    c.x = (c.x >> 11) + (c.x >> 12) + (WIDTH >> 1);
-    c.y = (c.y >> 11) + (c.y >> 12) + (HEIGHT >> 1);
-    c.z = min(max(24 - (c.z >> 13), 0), 63);
+    a.x = (a.x >> 2) + (WIDTH >> 1);
+    a.y = (a.y >> 2) + (HEIGHT >> 1);
+    a.z = min(max(24 - (a.z >> 4), 0), 63);
+    b.x = (b.x >> 2) + (WIDTH >> 1);
+    b.y = (b.y >> 2) + (HEIGHT >> 1);
+    b.z = min(max(24 - (b.z >> 4), 0), 63);
+    c.x = (c.x >> 2) + (WIDTH >> 1);
+    c.y = (c.y >> 2) + (HEIGHT >> 1);
+    c.z = min(max(24 - (c.z >> 4), 0), 63);
 
     if (orient2dint(a, b, c) > 0)
       continue;
@@ -129,12 +129,12 @@ void draw_tris(V4D *verts, int triList[])
 
     long_dx = (c.x - a.x) * oneover(longHeight);
     short_dx = (b.x - a.x) * oneover(shortHeight);
-    lx = (a.x << 16);
-    rx = (a.x << 16);
+    lx = (a.x << 8);
+    rx = (a.x << 8);
     long_cx = (c.z - a.z) * oneover(longHeight);
     short_cx = (b.z - a.z) * oneover(shortHeight);
-    lc = (a.z << 16);
-    rc = (a.z << 16);
+    lc = (a.z << 8);
+    rc = (a.z << 8);
     ptr = &back[a.y * WIDTH];
 
     if (shortHeight > 0) // Top Half
@@ -143,8 +143,8 @@ void draw_tris(V4D *verts, int triList[])
       { // Left side long edge
         do
         {
-          j = ((rx - lx) >> 16);
-          ptrEnd = ptr + (lx >> 16);
+          j = ((rx - lx) >> 8);
+          ptrEnd = ptr + (lx >> 8);
           hline(j, lc, rc, ptrEnd);
 
           lx += long_dx;
@@ -158,8 +158,8 @@ void draw_tris(V4D *verts, int triList[])
       { // Right side long edge
         do
         {
-          j = ((rx - lx) >> 16);
-          ptrEnd = ptr + (lx >> 16);
+          j = ((rx - lx) >> 8);
+          ptrEnd = ptr + (lx >> 8);
           hline(j, lc, rc, ptrEnd);
 
           rx += long_dx;
@@ -181,13 +181,13 @@ void draw_tris(V4D *verts, int triList[])
 
       if (short_dx < long_dx)
       { // Left side long edge
-        rx = (b.x << 16);
-        rc = (b.z << 16);
+        rx = (b.x << 8);
+        rc = (b.z << 8);
 
         do
         {
-          j = ((rx - lx) >> 16);
-          ptrEnd = ptr + (lx >> 16);
+          j = ((rx - lx) >> 8);
+          ptrEnd = ptr + (lx >> 8);
           hline(j, lc, rc, ptrEnd);
 
           lx += long_dx;
@@ -199,13 +199,13 @@ void draw_tris(V4D *verts, int triList[])
       }
       else
       { // Right side long edge
-        lx = (b.x << 16);
-        lc = (b.z << 16);
+        lx = (b.x << 8);
+        lc = (b.z << 8);
 
         do
         {
-          j = ((rx - lx) >> 16);
-          ptrEnd = ptr + (lx >> 16);
+          j = ((rx - lx) >> 8);
+          ptrEnd = ptr + (lx >> 8);
           hline(j, lc, rc, ptrEnd);
 
           rx += long_dx;
