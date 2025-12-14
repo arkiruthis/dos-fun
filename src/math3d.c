@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 fix g_oneOver[ONEOVERTABLE_SIZE]; // Reciprocal table (for max screen height of 256 in Mode 13)
+fix g_oneOver16[ONEOVERTABLE_SIZE]; // Reciprocal table (for max screen height of 256 in Mode 13)
 fix g_SineTable[SINETABLE_SIZE];  // SIN table. Offset used for COS.
 
 void SetupTables()
@@ -14,9 +15,11 @@ void SetupTables()
     for (i = 1; i < ONEOVERTABLE_SIZE; ++i)
     {
         g_oneOver[i] = 256.f / i;
+        g_oneOver16[i] = 65536.f / i;
     }
 
     g_oneOver[0] = 0; // Basically a non-op if dividing by zero
+    g_oneOver16[0] = 0;
 
     // Setup sine table
     for (i = 0; i < SINETABLE_SIZE; ++i)
@@ -63,17 +66,17 @@ void EulerToMat(MAT43 *mat, int heading, int pitch, int bank)
     sb = fixsin(bank);
     cb = fixcos(bank);
 
-    mat->m11 = fixmult(ch, cb) + fixmult(fixmult(sh, sp), sb);
-    mat->m12 = fixmult(-ch, sb) + fixmult(fixmult(sh, sp), cb);
-    mat->m13 = fixmult(sh, cp);
+    mat->m11 = fixmultINTL(ch, cb) + fixmultINTL(fixmultINTL(sh, sp), sb);
+    mat->m12 = fixmultINTL(-ch, sb) + fixmultINTL(fixmultINTL(sh, sp), cb);
+    mat->m13 = fixmultINTL(sh, cp);
 
-    mat->m21 = fixmult(sb, cp);
-    mat->m22 = fixmult(cb, cp);
+    mat->m21 = fixmultINTL(sb, cp);
+    mat->m22 = fixmultINTL(cb, cp);
     mat->m23 = -sp;
 
-    mat->m31 = fixmult(-sh, cb) + fixmult(fixmult(ch, sp), sb);
-    mat->m32 = fixmult(sb, sh) + fixmult(fixmult(ch, sp), cb);
-    mat->m33 = fixmult(ch, cp);
+    mat->m31 = fixmultINTL(-sh, cb) + fixmultINTL(fixmultINTL(ch, sp), sb);
+    mat->m32 = fixmultINTL(sb, sh) + fixmultINTL(fixmultINTL(ch, sp), cb);
+    mat->m33 = fixmultINTL(ch, cp);
 
     mat->tx = mat->ty = mat->tz = 0;
 }

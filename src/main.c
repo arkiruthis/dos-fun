@@ -72,13 +72,13 @@ void draw_tris(V4D *verts, int triList[])
     // Shifting by 11 gets 65536 down to 64 which fits okay as a max 128 within 200 height
     a.x = (a.x >> 2) + (WIDTH >> 1);
     a.y = (a.y >> 2) + (HEIGHT >> 1);
-    a.z = min(max(24 - (a.z >> 4), 0), 63);
+    a.z = min(max(24 - (a.z >> 3), 0), 63);
     b.x = (b.x >> 2) + (WIDTH >> 1);
     b.y = (b.y >> 2) + (HEIGHT >> 1);
-    b.z = min(max(24 - (b.z >> 4), 0), 63);
+    b.z = min(max(24 - (b.z >> 3), 0), 63);
     c.x = (c.x >> 2) + (WIDTH >> 1);
     c.y = (c.y >> 2) + (HEIGHT >> 1);
-    c.z = min(max(24 - (c.z >> 4), 0), 63);
+    c.z = min(max(24 - (c.z >> 3), 0), 63);
 
     if (orient2dint(a, b, c) > 0)
       continue;
@@ -127,24 +127,25 @@ void draw_tris(V4D *verts, int triList[])
     if (longHeight <= 0)
       continue;
 
-    long_dx = (c.x - a.x) * oneover(longHeight);
-    short_dx = (b.x - a.x) * oneover(shortHeight);
-    lx = (a.x << 8);
-    rx = (a.x << 8);
+    long_dx = (c.x - a.x) * oneover16(longHeight);
+    lx = (a.x << 16);
+    rx = (a.x << 16);
     long_cx = (c.z - a.z) * oneover(longHeight);
-    short_cx = (b.z - a.z) * oneover(shortHeight);
     lc = (a.z << 8);
     rc = (a.z << 8);
     ptr = &back[a.y * WIDTH];
-
+    
     if (shortHeight > 0) // Top Half
     {
+      short_dx = (b.x - a.x) * oneover16(shortHeight);
+      short_cx = (b.z - a.z) * oneover(shortHeight);
+
       if (long_dx < short_dx)
       { // Left side long edge
         do
         {
-          j = ((rx - lx) >> 8);
-          ptrEnd = ptr + (lx >> 8);
+          j = ((rx - lx) >> 16);
+          ptrEnd = ptr + (lx >> 16);
           hline(j, lc, rc, ptrEnd);
 
           lx += long_dx;
@@ -158,8 +159,8 @@ void draw_tris(V4D *verts, int triList[])
       { // Right side long edge
         do
         {
-          j = ((rx - lx) >> 8);
-          ptrEnd = ptr + (lx >> 8);
+          j = ((rx - lx) >> 16);
+          ptrEnd = ptr + (lx >> 16);
           hline(j, lc, rc, ptrEnd);
 
           rx += long_dx;
@@ -176,18 +177,18 @@ void draw_tris(V4D *verts, int triList[])
     shortHeight = c.y - b.y;
     if (shortHeight > 0)
     {
-      short_dx = (c.x - b.x) * oneover(shortHeight);
+      short_dx = (c.x - b.x) * oneover16(shortHeight);
       short_cx = (c.z - b.z) * oneover(shortHeight);
 
       if (short_dx < long_dx)
       { // Left side long edge
-        rx = (b.x << 8);
+        rx = (b.x << 16);
         rc = (b.z << 8);
 
         do
         {
-          j = ((rx - lx) >> 8);
-          ptrEnd = ptr + (lx >> 8);
+          j = ((rx - lx) >> 16);
+          ptrEnd = ptr + (lx >> 16);
           hline(j, lc, rc, ptrEnd);
 
           lx += long_dx;
@@ -199,13 +200,13 @@ void draw_tris(V4D *verts, int triList[])
       }
       else
       { // Right side long edge
-        lx = (b.x << 8);
+        lx = (b.x << 16);
         lc = (b.z << 8);
 
         do
         {
-          j = ((rx - lx) >> 8);
-          ptrEnd = ptr + (lx >> 8);
+          j = ((rx - lx) >> 16);
+          ptrEnd = ptr + (lx >> 16);
           hline(j, lc, rc, ptrEnd);
 
           rx += long_dx;
