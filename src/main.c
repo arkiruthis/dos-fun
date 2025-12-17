@@ -60,6 +60,7 @@ void draw_tris(V4D *verts, int triList[])
   fix i, j, k;
   fix short_dx, long_dx, lx, rx;
   fix long_cx, short_cx, lc, rc;
+  fix shortHeight, longHeight;
   V4D a, b, c;
   unsigned char *ptr, *ptrEnd;
 
@@ -121,8 +122,8 @@ void draw_tris(V4D *verts, int triList[])
       c.z = j;
     }
 
-    int shortHeight = b.y - a.y;
-    int longHeight = c.y - a.y;
+    shortHeight = b.y - a.y;
+    longHeight = c.y - a.y;
 
     if (longHeight <= 0)
       continue;
@@ -244,14 +245,7 @@ int main(void)
   // Set VGA mode 13h
   set_video_mode(0x13);
 
-  outportb(0x03C6, 0xFF); // Write mask
-  for (i = 0; i < 64; ++i)
-  {
-    outportb(0x03C8, i);               // Color index
-    outportb(0x03C9, min(i >> 1, 63)); // Red
-    outportb(0x03C9, min(i, 63));      // Green
-    outportb(0x03C9, min(i >> 2, 63)); // Blue
-  }
+  set_palette();
 
   current_time = time(NULL);
 

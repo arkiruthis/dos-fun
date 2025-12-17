@@ -3,4 +3,6 @@
 
 void set_video_mode(int mode);
 
+void set_palette(void);
+
 #endif // UTILS_H
