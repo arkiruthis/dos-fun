@@ -1,6 +1,8 @@
 #ifndef MATH3D_H
 #define MATH3D_H
 
+#include "types.h"
+
 #ifndef PI
 #define PI 3.14159265
 #endif // PI
@@ -15,10 +17,6 @@
 #define CLIP_RIGHT 0x02
 #define CLIP_TOP 0x04
 #define CLIP_BOTTOM 0x08
-
-// We are working with a signed 32-bit fixed-point value which is divided halfway
-// to offer 15 bits of integer (1 bit for sign) and 16 bits of mantissa
-typedef signed int fix;
 
 // Fixed point utilities
 #define int2fix(x) ((x) << 8)
