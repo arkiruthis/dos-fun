@@ -47,6 +47,13 @@ for %%f in (src\*.c) do (
     if errorlevel 1 set COMPILE_ERROR=1
 )
 
+echo Assembling assembly files...
+for %%f in (src\*.s) do (
+    echo   Assembling %%f...
+    gcc -c %%f -o obj\%%~nf.o
+    if errorlevel 1 set COMPILE_ERROR=1
+)
+
 if %COMPILE_ERROR%==1 (
     echo Compilation failed!
     exit /b 1
