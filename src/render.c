@@ -54,14 +54,14 @@ void draw_tris(V4D *verts, int triList[])
         c = verts[triList[(i * 3) + 2]];
 
         // Shifting by 11 gets 65536 down to 64 which fits okay as a max 128 within 200 height
-        a.x = (a.x >> 2) + (BACKBUFFER_WIDTH >> 1);
-        a.y = (a.y >> 2) + (BACKBUFFER_HEIGHT >> 1);
+        a.x = (a.x >> 2);
+        a.y = (a.y >> 2);
         a.z = min(max(24 - (a.z >> 3), 0), 63);
-        b.x = (b.x >> 2) + (BACKBUFFER_WIDTH >> 1);
-        b.y = (b.y >> 2) + (BACKBUFFER_HEIGHT >> 1);
+        b.x = (b.x >> 2);
+        b.y = (b.y >> 2);
         b.z = min(max(24 - (b.z >> 3), 0), 63);
-        c.x = (c.x >> 2) + (BACKBUFFER_WIDTH >> 1);
-        c.y = (c.y >> 2) + (BACKBUFFER_HEIGHT >> 1);
+        c.x = (c.x >> 2);
+        c.y = (c.y >> 2);
         c.z = min(max(24 - (c.z >> 3), 0), 63);
 
         if (orient2dint(a, b, c) > 0)
@@ -117,7 +117,11 @@ void draw_tris(V4D *verts, int triList[])
         long_cx = (c.z - a.z) * oneover(longHeight);
         lc = (a.z << 8);
         rc = (a.z << 8);
-        ptr = &back[a.y * BACKBUFFER_WIDTH];
+        ptr = back;
+
+        ptr += (BACKBUFFER_SIZE + BACKBUFFER_WIDTH) >> 1; // Center horizontally
+        ptr += (a.y * BACKBUFFER_WIDTH);
+
 
         if (shortHeight > 0) // Top Half
         {
