@@ -6,10 +6,6 @@ EDGE g_edgeList[EDGELIST_SIZE];
 
 unsigned char back[BACKBUFFER_SIZE];
 
-#ifdef __DJGPP__
-/* hline implemented in raster.s */
-extern void hline(int length, fix c1, fix c2, unsigned char *ptr);
-#else
 inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
 {
     fix xstep = (((c2 - c1) >> 8) + 1) * oneover(length);
@@ -20,7 +16,6 @@ inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
         c1 += xstep;
     } while (length-- > 0);
 }
-#endif
 
 void run_edge_list(fix yStart, fix height)
 {
@@ -126,6 +121,7 @@ void draw_tris(V4D *verts, int triList[])
 
         ptr += (BACKBUFFER_SIZE + BACKBUFFER_WIDTH) >> 1; // Center horizontally
         ptr += (a.y * BACKBUFFER_WIDTH);
+
 
         if (shortHeight > 0) // Top Half
         {
