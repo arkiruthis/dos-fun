@@ -82,6 +82,9 @@ int main(void)
 
     draw_tris(cubeTransformed, triList);
 
+    // Wait for vertical retrace to avoid tearing
+    wait_vretrace();
+
     // Blit back buffer -> VGA in one go
     memcpy(vga, &back[0], BACKBUFFER_SIZE);
     ++t;

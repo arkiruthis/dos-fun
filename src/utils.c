@@ -53,3 +53,19 @@ void set_palette(void)
   }
 #endif
 }
+
+// Wait for vertical retrace to avoid tearing
+void wait_vretrace(void)
+{
+#ifdef __DJGPP__
+  // Wait until not in vertical retrace
+  while (inportb(0x3DA) & 0x08);
+  // Wait until vertical retrace starts
+  while (!(inportb(0x3DA) & 0x08));
+#else // Watcom C/C++
+  // Wait until not in vertical retrace
+  while (inp(0x3DA) & 0x08);
+  // Wait until vertical retrace starts
+  while (!(inp(0x3DA) & 0x08));
+#endif
+}

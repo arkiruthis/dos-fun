@@ -6,7 +6,7 @@ EDGE g_edgeList[EDGELIST_SIZE];
 
 unsigned char back[BACKBUFFER_SIZE];
 
-void hline(int length, fix c1, fix c2, unsigned char *ptr)
+inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
 {
     fix xstep = (((c2 - c1) >> 8) + 1) * oneover(length);
 
@@ -124,36 +124,22 @@ void draw_tris(V4D *verts, int triList[])
             short_dx = (b.x - a.x) * oneover16(shortHeight);
             short_cx = (b.z - a.z) * oneover(shortHeight);
 
-            if (long_dx < short_dx)
-            { // Left side long edge
-                do
-                {
-                    j = ((rx - lx) >> 16);
-                    ptrEnd = ptr + (lx >> 16);
+            do
+            {
+                j = ((rx - lx) >> 16);
+                k = min(lx, rx);
+                ptrEnd = ptr + (k >> 16);
+                if (j > 0)
                     hline(j, lc, rc, ptrEnd);
+                else
+                    hline(-j, rc, lc, ptrEnd);
 
-                    lx += long_dx;
-                    rx += short_dx;
-                    lc += long_cx;
-                    rc += short_cx;
-                    ptr += BACKBUFFER_WIDTH;
-                } while (--shortHeight > 0);
-            }
-            else
-            { // Right side long edge
-                do
-                {
-                    j = ((rx - lx) >> 16);
-                    ptrEnd = ptr + (lx >> 16);
-                    hline(j, lc, rc, ptrEnd);
-
-                    rx += long_dx;
-                    lx += short_dx;
-                    rc += long_cx;
-                    lc += short_cx;
-                    ptr += BACKBUFFER_WIDTH;
-                } while (--shortHeight > 0);
-            }
+                lx += long_dx;
+                rx += short_dx;
+                lc += long_cx;
+                rc += short_cx;
+                ptr += BACKBUFFER_WIDTH;
+            } while (--shortHeight > 0);
         }
 
         // Bottom Half
@@ -164,42 +150,25 @@ void draw_tris(V4D *verts, int triList[])
             short_dx = (c.x - b.x) * oneover16(shortHeight);
             short_cx = (c.z - b.z) * oneover(shortHeight);
 
-            if (short_dx < long_dx)
-            { // Left side long edge
-                rx = (b.x << 16);
-                rc = (b.z << 8);
+            rx = (b.x << 16);
+            rc = (b.z << 8);
 
-                do
-                {
-                    j = ((rx - lx) >> 16);
-                    ptrEnd = ptr + (lx >> 16);
+            do
+            {
+                j = ((rx - lx) >> 16);
+                k = min(lx, rx);
+                ptrEnd = ptr + (k >> 16);
+                if (j > 0)
                     hline(j, lc, rc, ptrEnd);
+                else
+                    hline(-j, rc, lc, ptrEnd);
 
-                    lx += long_dx;
-                    rx += short_dx;
-                    lc += long_cx;
-                    rc += short_cx;
-                    ptr += BACKBUFFER_WIDTH;
-                } while (--shortHeight > 0);
-            }
-            else
-            { // Right side long edge
-                lx = (b.x << 16);
-                lc = (b.z << 8);
-
-                do
-                {
-                    j = ((rx - lx) >> 16);
-                    ptrEnd = ptr + (lx >> 16);
-                    hline(j, lc, rc, ptrEnd);
-
-                    rx += long_dx;
-                    lx += short_dx;
-                    rc += long_cx;
-                    lc += short_cx;
-                    ptr += BACKBUFFER_WIDTH;
-                } while (--shortHeight > 0);
-            }
+                lx += long_dx;
+                rx += short_dx;
+                lc += long_cx;
+                rc += short_cx;
+                ptr += BACKBUFFER_WIDTH;
+            } while (--shortHeight > 0);
         }
     }
 }
