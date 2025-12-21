@@ -23,6 +23,17 @@ static V4D cubeVerts[8] = {
     {-128, 128, -128, 15},  // BACK BOTTOM LEFT
 };
 
+static V4D cubeVertNormals[8] = {
+    { -147, -147, 147, 0},   // FRONT TOP LEFT
+    { 147, -147, 147, 0},    // FRONT TOP RIGHT
+    { 147, 147, 147, 0},     // FRONT BOTTOM RIGHT
+    { -147, 147, 147, 0},    // FRONT BOTTOM LEFT
+    { -147, -147, -147, 0},  // BACK TOP LEFT
+    { 147, -147, -147, 0},   // BACK TOP RIGHT
+    { 147, 147, -147, 0},    // BACK BOTTOM RIGHT
+    { -147, 147, -147, 0},   // BACK BOTTOM LEFT
+};
+
 // Clockwise winding
 static int triList[12 * 3] = {
     0, 1, 2, // FR 1
@@ -48,6 +59,8 @@ int main(void)
   time_t current_time;
 
   V4D cubeTransformed[8];
+  V4D normalsTransformed[8];
+  V3D lightDir = {float2fix(0.0f), float2fix(0.0f), float2fix(-1.0f)};
   MAT43 mat = {0};
 
   SetupTables();
@@ -61,9 +74,9 @@ int main(void)
 #endif
 
   // Set VGA mode 13h
-  set_video_mode(0x13);
+  SetVideoMode(0x13);
 
-  set_palette();
+  SetPalette();
 
   current_time = time(NULL);
 
@@ -78,12 +91,14 @@ int main(void)
     for (i = 0; i < 8; ++i)
     {
       MultV4DMatC(&cubeVerts[i], &cubeTransformed[i], &mat);
+      MultV4DMatC(&cubeVertNormals[i], &normalsTransformed[i], &mat);
+      cubeTransformed[i].z = max(0, DotProduct((V3D *)&normalsTransformed[i], &lightDir));
     }
 
-    draw_tris(cubeTransformed, triList);
+    DrawTris(cubeTransformed, triList);
 
     // Wait for vertical retrace to avoid tearing
-    wait_vretrace();
+    WaitVRetrace();
 
     // Blit back buffer -> VGA in one go
     memcpy(vga, &back[0], BACKBUFFER_SIZE);
@@ -94,7 +109,7 @@ int main(void)
   getch();
 
   // Back to text mode 3
-  set_video_mode(0x03);
+  SetVideoMode(0x03);
 
   printf("Returned to text mode. Program finished.\n");
   printf("Elapsed time: %ld seconds\n", current_time);

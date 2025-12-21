@@ -1,14 +1,11 @@
 #include "render.h"
 #include "math3d.h"
 
-#define EDGELIST_SIZE 200 // 200 scanlines max
-EDGE g_edgeList[EDGELIST_SIZE];
-
 unsigned char back[BACKBUFFER_SIZE];
 
 inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
 {
-    fix xstep = (((c2 - c1) >> 8) + 1) * oneover(length);
+    fix xstep = ((c2 - c1) * oneover16(length)) >> 16;
 
     do
     {
@@ -17,27 +14,7 @@ inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
     } while (length-- > 0);
 }
 
-void run_edge_list(fix yStart, fix height)
-{
-    EDGE *currentEdge = &g_edgeList[yStart];
-
-    do
-    {
-        fix span = currentEdge->span;
-        fix c1 = currentEdge->c;
-        fix xstep = currentEdge->xStep;
-        unsigned char *linePtr = currentEdge->ptr;
-
-        do
-        {
-            *linePtr++ = (c1 >> 8);
-            c1 += xstep;
-        } while (span-- > 0);
-        ++currentEdge;
-    } while (--height > 0);
-}
-
-void draw_tris(V4D *verts, int triList[])
+void DrawTris(V4D *verts, int triList[])
 {
     fix i, j, k;
     fix short_dx, long_dx, lx, rx;
@@ -45,7 +22,6 @@ void draw_tris(V4D *verts, int triList[])
     fix shortHeight, longHeight;
     V4D a, b, c;
     unsigned char *ptr, *ptrEnd;
-    EDGE *currentEdge;
 
     for (i = 0; i < 12; ++i)
     {
@@ -56,13 +32,13 @@ void draw_tris(V4D *verts, int triList[])
         // Shifting by 11 gets 65536 down to 64 which fits okay as a max 128 within 200 height
         a.x = (a.x >> 2);
         a.y = (a.y >> 2);
-        a.z = min(max(24 - (a.z >> 3), 0), 63);
+        a.z = min(max(16 + (a.z >> 3), 0), 63);
         b.x = (b.x >> 2);
         b.y = (b.y >> 2);
-        b.z = min(max(24 - (b.z >> 3), 0), 63);
+        b.z = min(max(16 + (b.z >> 3), 0), 63);
         c.x = (c.x >> 2);
         c.y = (c.y >> 2);
-        c.z = min(max(24 - (c.z >> 3), 0), 63);
+        c.z = min(max(16 + (c.z >> 3), 0), 63);
 
         if (orient2dint(a, b, c) > 0)
             continue;

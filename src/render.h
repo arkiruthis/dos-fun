@@ -7,15 +7,10 @@
 #define BACKBUFFER_HEIGHT 200
 #define BACKBUFFER_SIZE (BACKBUFFER_WIDTH * BACKBUFFER_HEIGHT)
 
-typedef struct EDGE
-{
-  unsigned char *ptr; // Pointer into backbuffer
-  fix c;              // Current color/depth value
-  fix xStep;          // Step per scanline
-  fix span;           // Number of pixels to draw on this scanline
-} EDGE;
-
-extern EDGE g_edgeList[];
 extern unsigned char back[];
+
+struct V4D;
+
+void DrawTris(struct V4D *verts, int triList[]);
 
 #endif // RENDER_H

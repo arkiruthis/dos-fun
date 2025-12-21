@@ -16,7 +16,7 @@
 #endif // max
 
 // Function to set the VGA video mode using BIOS interrupt 0x10
-void set_video_mode(int mode)
+void SetVideoMode(int mode)
 {
 #ifdef __DJGPP__
   __dpmi_regs r;
@@ -29,7 +29,7 @@ void set_video_mode(int mode)
 #endif
 }
 
-void set_palette(void)
+void SetPalette(void)
 {
   int i;
 
@@ -55,7 +55,7 @@ void set_palette(void)
 }
 
 // Wait for vertical retrace to avoid tearing
-void wait_vretrace(void)
+void WaitVRetrace(void)
 {
 #ifdef __DJGPP__
   // Wait until not in vertical retrace

@@ -1,10 +1,10 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-void set_video_mode(int mode);
+void SetVideoMode(int mode);
 
-void set_palette(void);
+void SetPalette(void);
 
-void wait_vretrace(void);
+void WaitVRetrace(void);
 
 #endif // UTILS_H

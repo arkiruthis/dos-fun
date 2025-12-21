@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-fix g_oneOver[ONEOVERTABLE_SIZE]; // Reciprocal table (for max screen height of 256 in Mode 13)
+fix g_oneOver[ONEOVERTABLE_SIZE];   // Reciprocal table (for max screen height of 256 in Mode 13)
 fix g_oneOver16[ONEOVERTABLE_SIZE]; // Reciprocal table (for max screen height of 256 in Mode 13)
-fix g_SineTable[SINETABLE_SIZE];  // SIN table. Offset used for COS.
+fix g_SineTable[SINETABLE_SIZE];    // SIN table. Offset used for COS.
 
 void SetupTables()
 {
@@ -66,17 +66,17 @@ void EulerToMat(MAT43 *mat, int heading, int pitch, int bank)
     sb = fixsin(bank);
     cb = fixcos(bank);
 
-    mat->m11 = fixmultINTL(ch, cb) + fixmultINTL(fixmultINTL(sh, sp), sb);
-    mat->m12 = fixmultINTL(-ch, sb) + fixmultINTL(fixmultINTL(sh, sp), cb);
-    mat->m13 = fixmultINTL(sh, cp);
+    mat->m11 = fixmultSML(ch, cb) + fixmultSML(fixmultSML(sh, sp), sb);
+    mat->m12 = fixmultSML(-ch, sb) + fixmultSML(fixmultSML(sh, sp), cb);
+    mat->m13 = fixmultSML(sh, cp);
 
-    mat->m21 = fixmultINTL(sb, cp);
-    mat->m22 = fixmultINTL(cb, cp);
+    mat->m21 = fixmultSML(sb, cp);
+    mat->m22 = fixmultSML(cb, cp);
     mat->m23 = -sp;
 
-    mat->m31 = fixmultINTL(-sh, cb) + fixmultINTL(fixmultINTL(ch, sp), sb);
-    mat->m32 = fixmultINTL(sb, sh) + fixmultINTL(fixmultINTL(ch, sp), cb);
-    mat->m33 = fixmultINTL(ch, cp);
+    mat->m31 = fixmultSML(-sh, cb) + fixmultSML(fixmultSML(ch, sp), sb);
+    mat->m32 = fixmultSML(sb, sh) + fixmultSML(fixmultSML(ch, sp), cb);
+    mat->m33 = fixmultSML(ch, cp);
 
     mat->tx = mat->ty = mat->tz = 0;
 }
@@ -170,7 +170,7 @@ void Normalize(V3D *v)
 
 fix DotProduct(const V3D *v1, const V3D *v2)
 {
-    return fixmult(v1->x, v2->x) + fixmult(v1->y, v2->y) + fixmult(v1->z, v2->z);
+    return fixmultSML(v1->x, v2->x) + fixmultSML(v1->y, v2->y) + fixmultSML(v1->z, v2->z);
 }
 
 void MultMatMat(MAT43 *dest, MAT43 *a, MAT43 *b)
@@ -198,16 +198,16 @@ void MultMatMat(MAT43 *dest, MAT43 *a, MAT43 *b)
 
 void MultV3DMat(V3D *v, V3D *dest, MAT43 *mat)
 {
-    dest->x = fixmult(v->x, mat->m11) + fixmult(v->y, mat->m12) + fixmult(v->z, mat->m13) + mat->tx;
-    dest->y = fixmult(v->x, mat->m21) + fixmult(v->y, mat->m22) + fixmult(v->z, mat->m23) + mat->ty;
-    dest->z = fixmult(v->x, mat->m31) + fixmult(v->y, mat->m32) + fixmult(v->z, mat->m33) + mat->tz;
+    dest->x = fixmultSML(v->x, mat->m11) + fixmultSML(v->y, mat->m12) + fixmultSML(v->z, mat->m13) + mat->tx;
+    dest->y = fixmultSML(v->x, mat->m21) + fixmultSML(v->y, mat->m22) + fixmultSML(v->z, mat->m23) + mat->ty;
+    dest->z = fixmultSML(v->x, mat->m31) + fixmultSML(v->y, mat->m32) + fixmultSML(v->z, mat->m33) + mat->tz;
 }
 
 void MultV4DMatC(V4D *v, V4D *dest, MAT43 *mat)
 {
-    dest->x = fixmultINTL(v->x, mat->m11) + fixmultINTL(v->y, mat->m12) + fixmultINTL(v->z, mat->m13) + mat->tx;
-    dest->y = fixmultINTL(v->x, mat->m21) + fixmultINTL(v->y, mat->m22) + fixmultINTL(v->z, mat->m23) + mat->ty;
-    dest->z = fixmultINTL(v->x, mat->m31) + fixmultINTL(v->y, mat->m32) + fixmultINTL(v->z, mat->m33) + mat->tz;
+    dest->x = fixmultSML(v->x, mat->m11) + fixmultSML(v->y, mat->m12) + fixmultSML(v->z, mat->m13) + mat->tx;
+    dest->y = fixmultSML(v->x, mat->m21) + fixmultSML(v->y, mat->m22) + fixmultSML(v->z, mat->m23) + mat->ty;
+    dest->z = fixmultSML(v->x, mat->m31) + fixmultSML(v->y, mat->m32) + fixmultSML(v->z, mat->m33) + mat->tz;
     dest->w = v->w;
 }
 

@@ -24,7 +24,7 @@
 #define float2fix(a) (fix)((a) * 256.f)
 #define fix2float(a) (float)((a) / 256.f)
 #define fixmult(a, b) (fix)(((a) >> 4) * ((b) >> 4))
-#define fixmultINTL(a, b) (fix)((a * b) >> 8)
+#define fixmultSML(a, b) (fix)((a * b) >> 8)
 // #define fixdiv(a, b) (fix)(((a) << 8) / ((b) >> 8)) // NOTE - slow
 
 #ifndef min
@@ -102,7 +102,7 @@ typedef struct V4D
 typedef struct TRI
 {
     unsigned short a, b, c, flags;
-    V2D centerpoint;
+    V3D normal;
     fix depth;
     void *next;
 } TRI;
