@@ -60,6 +60,8 @@ int LoadPalette(const char *filename)
 {
   FILE *file;
   char line[256];
+  unsigned int index = 0;
+  unsigned int r, g, b;
 
   file = fopen(filename, "r");
   if (file == NULL)
@@ -76,10 +78,8 @@ int LoadPalette(const char *filename)
 #endif
 
   // HEX file with 256 entries in the form RRGGBB
-  unsigned int index = 0;
   while (fgets(line, 256, file))
   {
-    unsigned int r, g, b;
     if (sscanf(line, "%02X%02X%02X", &r, &g, &b) == 3)
     {
       r >>= 2;
