@@ -26,6 +26,8 @@ int LoadObj(char *filename)
     V4D vertex;
     V4D _verts[4];
     TRI face;
+    V4D *tempNormals = NULL;
+    V4D *remappedNormals = NULL;
 
     g_Mesh.verts = NULL;
     g_Mesh.faces = NULL;
@@ -56,7 +58,7 @@ int LoadObj(char *filename)
             vertex.x = float2fix(vertex_float[0]);
             vertex.y = float2fix(vertex_float[1]);
             vertex.z = float2fix(vertex_float[2]);
-            cvector_push_back(g_Mesh.vertNormals, vertex);
+            cvector_push_back(tempNormals, vertex);
         }
         // // Face information
         if (strncmp(line, "f ", 2) == 0)
@@ -73,8 +75,25 @@ int LoadObj(char *filename)
             face.next = NULL;
 
             cvector_push_back(g_Mesh.faces, face);
+
+            // Remap normals to match vertex indices
+            if (remappedNormals == NULL)
+            {
+                cvector_reserve(remappedNormals, cvector_size(g_Mesh.verts));
+                cvector_set_size(remappedNormals, cvector_size(g_Mesh.verts));
+            }
+            for (i = 0; i < 3; i++)
+            {
+                int vert_idx = vertex_indices[i] - 1;
+                int norm_idx = normal_indices[i] - 1;
+                remappedNormals[vert_idx] = tempNormals[norm_idx];
+            }
         }
     }
+
+    // Replace vertNormals with remapped version
+    g_Mesh.vertNormals = remappedNormals;
+    cvector_free(tempNormals);
 
     cvector_copy(g_Mesh.verts, g_Mesh.vertsTransformed);
     cvector_copy(g_Mesh.vertNormals, g_Mesh.vertNormalsTransformed);
