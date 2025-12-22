@@ -11,44 +11,7 @@
 #include "utils.h"
 #include "math3d.h"
 #include "render.h"
-
-static V4D cubeVerts[8] = {
-    {-128, -128, 128, 1},   // FRONT TOP LEFT
-    {128, -128, 128, 1},    // FRONT TOP RIGHT
-    {128, 128, 128, 1},     // FRONT BOTTOM RIGHT
-    {-128, 128, 128, 1},    // FRONT BOTTOM LEFT
-    {-128, -128, -128, 15}, // BACK TOP LEFT
-    {128, -128, -128, 15},  // BACK TOP RIGHT
-    {128, 128, -128, 15},   // BACK BOTTOM RIGHT
-    {-128, 128, -128, 15},  // BACK BOTTOM LEFT
-};
-
-static V4D cubeVertNormals[8] = {
-    { -147, -147, 147, 0},   // FRONT TOP LEFT
-    { 147, -147, 147, 0},    // FRONT TOP RIGHT
-    { 147, 147, 147, 0},     // FRONT BOTTOM RIGHT
-    { -147, 147, 147, 0},    // FRONT BOTTOM LEFT
-    { -147, -147, -147, 0},  // BACK TOP LEFT
-    { 147, -147, -147, 0},   // BACK TOP RIGHT
-    { 147, 147, -147, 0},    // BACK BOTTOM RIGHT
-    { -147, 147, -147, 0},   // BACK BOTTOM LEFT
-};
-
-// Clockwise winding
-static int triList[12 * 3] = {
-    0, 1, 2, // FR 1
-    0, 2, 3, // FR 2
-    5, 4, 7, // BK 1
-    5, 7, 6, // BK 2
-    4, 0, 3, // LT 1
-    4, 3, 7, // LT 2
-    1, 5, 6, // RT 1
-    1, 6, 2, // RT 2
-    3, 2, 6, // BT 1
-    3, 6, 7, // BT 2
-    4, 5, 1, // TP 1
-    4, 1, 0  // TP 2
-};
+#include "mesh.h"
 
 int main(void)
 {
@@ -60,10 +23,12 @@ int main(void)
 
   V4D cubeTransformed[8];
   V4D normalsTransformed[8];
-  V3D lightDir = {float2fix(0.0f), float2fix(0.0f), float2fix(-1.0f)};
+  V3D lightDir = {float2fix(0.707f), float2fix(0.0f), -float2fix(0.707f)};
   MAT43 mat = {0};
 
   SetupTables();
+
+  LoadObj("sphere.obj");
 
 // Map physical 0xA0000 into our flat address space
 #ifdef __DJGPP__
@@ -76,7 +41,12 @@ int main(void)
   // Set VGA mode 13h
   SetVideoMode(0x13);
 
-  SetPalette();
+  // SetPalette();
+  if (LoadPalette("pal.hex") != 0)
+  {
+    printf("Failed to load palette file.\n");
+    return 1;
+  }
 
   current_time = time(NULL);
 
@@ -88,14 +58,14 @@ int main(void)
 
     memset(&back[0], 0, BACKBUFFER_SIZE);
 
-    for (i = 0; i < 8; ++i)
+    for (i = 0; i < cvector_size(g_Mesh.verts); ++i)
     {
-      MultV4DMatC(&cubeVerts[i], &cubeTransformed[i], &mat);
-      MultV4DMatC(&cubeVertNormals[i], &normalsTransformed[i], &mat);
-      cubeTransformed[i].z = max(0, DotProduct((V3D *)&normalsTransformed[i], &lightDir));
+      MultV4DMatC(&g_Mesh.verts[i], &g_Mesh.vertsTransformed[i], &mat);
+      MultV4DMatC(&g_Mesh.vertNormals[i], &g_Mesh.vertNormalsTransformed[i], &mat);
+      g_Mesh.vertsTransformed[i].z = max(0, DotProduct((V3D *)&g_Mesh.vertNormalsTransformed[i], &lightDir));
     }
 
-    DrawTris(cubeTransformed, triList);
+    DrawTris(g_Mesh.vertsTransformed, g_Mesh.faces, cvector_size(g_Mesh.faces));
 
     // Wait for vertical retrace to avoid tearing
     WaitVRetrace();
@@ -110,6 +80,8 @@ int main(void)
 
   // Back to text mode 3
   SetVideoMode(0x03);
+
+  FreeMesh();
 
   printf("Returned to text mode. Program finished.\n");
   printf("Elapsed time: %ld seconds\n", current_time);

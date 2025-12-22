@@ -7,6 +7,8 @@
 #include <conio.h>
 #endif
 
+#include <stdio.h>
+
 #ifndef min
 #define min(x, y) ((x) < (y) ? (x) : (y))
 #endif // min
@@ -24,7 +26,7 @@ void SetVideoMode(int mode)
   __dpmi_int(0x10, &r);
 #else // Watcom C/C++
   union REGS regs;
-  regs.w.ax = mode; // AH=00h (Set Video Mode), AL=mode number
+  regs.w.ax = mode;           // AH=00h (Set Video Mode), AL=mode number
   int386(0x10, &regs, &regs); // Call BIOS interrupt 0x10 (Video Services)
 #endif
 }
@@ -52,6 +54,57 @@ void SetPalette(void)
     outp(0x03C9, min(i >> 2, 63)); // Blue
   }
 #endif
+}
+
+int LoadPalette(const char *filename)
+{
+  FILE *file;
+  char line[256];
+
+  file = fopen(filename, "r");
+  if (file == NULL)
+  {
+    printf("ERROR - Unable to find file.\n");
+    return 1;
+  }
+
+  // Set the mask to allow all bits to be written
+#ifdef __DJGPP__
+  outportb(0x03C6, 0xFF); // Write mask
+#else                     // Watcom C/C++
+  outp(0x03C6, 0xFF); // Write mask
+#endif
+
+  // HEX file with 256 entries in the form RRGGBB
+  unsigned int index = 0;
+  while (fgets(line, 256, file))
+  {
+    unsigned int r, g, b;
+    if (sscanf(line, "%02X%02X%02X", &r, &g, &b) == 3)
+    {
+      r >>= 2;
+      g >>= 2;
+      b >>= 2;
+      // VGA is 0-63 so we shift right by 2
+#ifdef __DJGPP__
+      outportb(0x03C8, index); // Color index
+      outportb(0x03C9, r);     // Red
+      outportb(0x03C9, g);     // Green
+      outportb(0x03C9, b);     // Blue
+#else                          // Watcom C/C++
+      outp(0x03C8, index); // Color index
+      outp(0x03C9, r);     // Red
+      outp(0x03C9, g);     // Green
+      outp(0x03C9, b);     // Blue
+#endif
+      printf("%d: %d %d %d\n", index, r, g, b);
+      index++;
+    }
+  }
+
+  fclose(file);
+
+  return 0;
 }
 
 // Wait for vertical retrace to avoid tearing

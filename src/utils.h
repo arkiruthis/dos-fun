@@ -3,6 +3,8 @@
 
 void SetVideoMode(int mode);
 
+int LoadPalette(const char* filename);
+
 void SetPalette(void);
 
 void WaitVRetrace(void);

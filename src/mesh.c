@@ -9,7 +9,9 @@ void FreeMesh(void)
 {
     cvector_free(g_Mesh.verts);
     cvector_free(g_Mesh.faces);
-    cvector_free(g_Mesh.verts_transformed);
+    cvector_free(g_Mesh.vertsTransformed);
+    cvector_free(g_Mesh.vertNormals);
+    cvector_free(g_Mesh.vertNormalsTransformed);
 }
 
 int LoadObj(char *filename)
@@ -21,13 +23,13 @@ int LoadObj(char *filename)
     int normal_indices[3];
     float vertex_float[3];
     int i;
-    V3D vertex;
-    V3D _verts[4];
+    V4D vertex;
+    V4D _verts[4];
     TRI face;
 
     g_Mesh.verts = NULL;
     g_Mesh.faces = NULL;
-    g_Mesh.verts_transformed = NULL;
+    g_Mesh.vertsTransformed = NULL;
 
     file = fopen(filename, "r");
     if (file == NULL)
@@ -47,6 +49,15 @@ int LoadObj(char *filename)
             vertex.z = float2fix(vertex_float[2]);
             cvector_push_back(g_Mesh.verts, vertex);
         }
+        // Vertex Normal information
+        if (strncmp(line, "vn ", 3) == 0)
+        {
+            sscanf(line, "vn %f %f %f", &vertex_float[0], &vertex_float[1], &vertex_float[2]);
+            vertex.x = float2fix(vertex_float[0]);
+            vertex.y = float2fix(vertex_float[1]);
+            vertex.z = float2fix(vertex_float[2]);
+            cvector_push_back(g_Mesh.vertNormals, vertex);
+        }
         // // Face information
         if (strncmp(line, "f ", 2) == 0)
         {
@@ -65,16 +76,8 @@ int LoadObj(char *filename)
         }
     }
 
-    for (i = 0; i < cvector_size(g_Mesh.faces); ++i)
-    {
-        _verts[0] = g_Mesh.verts[g_Mesh.faces[i].a];
-        _verts[1] = g_Mesh.verts[g_Mesh.faces[i].b];
-        _verts[2] = g_Mesh.verts[g_Mesh.faces[i].c];
-        Normal(&_verts[0], &_verts[1], &_verts[2], &g_Mesh.faces[i].normal);
-        Normalize(&g_Mesh.faces[i].normal);
-    }
-
-    cvector_copy(g_Mesh.verts, g_Mesh.verts_transformed);
+    cvector_copy(g_Mesh.verts, g_Mesh.vertsTransformed);
+    cvector_copy(g_Mesh.vertNormals, g_Mesh.vertNormalsTransformed);
 
     fclose(file);
 

@@ -102,7 +102,6 @@ typedef struct V4D
 typedef struct TRI
 {
     unsigned short a, b, c, flags;
-    V3D normal;
     fix depth;
     void *next;
 } TRI;

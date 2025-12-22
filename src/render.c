@@ -5,7 +5,7 @@ unsigned char back[BACKBUFFER_SIZE];
 
 inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
 {
-    fix xstep = ((c2 - c1) * oneover16(length)) >> 16;
+    fix xstep = ((c2 - c1) * oneover(length)) >> 8;
 
     do
     {
@@ -14,7 +14,7 @@ inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
     } while (length-- > 0);
 }
 
-void DrawTris(V4D *verts, int triList[])
+void DrawTris(V4D *verts, TRI *triList, size_t triCount)
 {
     fix i, j, k;
     fix short_dx, long_dx, lx, rx;
@@ -23,22 +23,22 @@ void DrawTris(V4D *verts, int triList[])
     V4D a, b, c;
     unsigned char *ptr, *ptrEnd;
 
-    for (i = 0; i < 12; ++i)
+    for (i = 0; i < triCount; ++i)
     {
-        a = verts[triList[(i * 3) + 0]];
-        b = verts[triList[(i * 3) + 1]];
-        c = verts[triList[(i * 3) + 2]];
+        a = verts[triList[i].a];
+        b = verts[triList[i].b];
+        c = verts[triList[i].c];
 
         // Shifting by 11 gets 65536 down to 64 which fits okay as a max 128 within 200 height
         a.x = (a.x >> 2);
         a.y = (a.y >> 2);
-        a.z = min(max(16 + (a.z >> 3), 0), 63);
+        a.z = min(max(16 + (a.z >> 4), 0), 31);
         b.x = (b.x >> 2);
         b.y = (b.y >> 2);
-        b.z = min(max(16 + (b.z >> 3), 0), 63);
+        b.z = min(max(16 + (b.z >> 4), 0), 31);
         c.x = (c.x >> 2);
         c.y = (c.y >> 2);
-        c.z = min(max(16 + (c.z >> 3), 0), 63);
+        c.z = min(max(16 + (c.z >> 4), 0), 31);
 
         if (orient2dint(a, b, c) > 0)
             continue;
