@@ -66,6 +66,8 @@ REM Install to target directory
 if not exist "%DOS_INSTALL_DIR%" mkdir "%DOS_INSTALL_DIR%"
 echo Installing bin\wmain.exe to %DOS_INSTALL_DIR%...
 copy bin\wmain.exe "%DOS_INSTALL_DIR%" > nul
+echo Copying assets to %DOS_INSTALL_DIR%...
+copy assets\*.* "%DOS_INSTALL_DIR%" > nul
 echo Installation complete.
 goto :eof
 
