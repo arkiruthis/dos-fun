@@ -7,11 +7,11 @@ inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
 {
     fix xstep = ((c2 - c1) * oneover(length)) >> 8;
 
-    do
+    while (length-- > 0)
     {
         *ptr++ = (c1 >> 8);
         c1 += xstep;
-    } while (length-- > 0);
+    }
 }
 
 void DrawTris(V4D *verts, TRI *triList, size_t triCount)
@@ -106,13 +106,13 @@ void DrawTris(V4D *verts, TRI *triList, size_t triCount)
 
             do
             {
-                j = ((rx - lx) >> 16);
+                j = abs((rx >> 16) - (lx >> 16));
                 k = min(lx, rx);
                 ptrEnd = ptr + (k >> 16);
-                if (j > 0)
+                if (lx <= rx)
                     hline(j, lc, rc, ptrEnd);
                 else
-                    hline(-j, rc, lc, ptrEnd);
+                    hline(j, rc, lc, ptrEnd);
 
                 lx += long_dx;
                 rx += short_dx;
@@ -135,13 +135,13 @@ void DrawTris(V4D *verts, TRI *triList, size_t triCount)
 
             do
             {
-                j = ((rx - lx) >> 16);
+                j = abs((rx >> 16) - (lx >> 16));
                 k = min(lx, rx);
                 ptrEnd = ptr + (k >> 16);
-                if (j > 0)
+                if (lx <= rx)
                     hline(j, lc, rc, ptrEnd);
                 else
-                    hline(-j, rc, lc, ptrEnd);
+                    hline(j, rc, lc, ptrEnd);
 
                 lx += long_dx;
                 rx += short_dx;
