@@ -101,7 +101,7 @@ typedef struct V4D
 
 typedef struct TRI
 {
-    unsigned short a, b, c, flags;
+    unsigned short a, b, c, material_offset;
     fix depth;
     void *next;
 } TRI;

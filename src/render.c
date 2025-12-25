@@ -1,9 +1,11 @@
 #include "render.h"
 #include "math3d.h"
+#include "mesh.h"
 
 unsigned char back[BACKBUFFER_SIZE];
+TRI *triList[TRI_LIST_SIZE];
 
-inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
+static inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
 {
     fix xstep = ((c2 - c1) * oneover(length)) >> 8;
 
@@ -14,7 +16,7 @@ inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
     }
 }
 
-void DrawTris(V4D *verts, TRI *triList, size_t triCount)
+void DrawTris()
 {
     fix i, j, k;
     fix short_dx, long_dx, lx, rx;
@@ -23,22 +25,26 @@ void DrawTris(V4D *verts, TRI *triList, size_t triCount)
     V4D a, b, c;
     unsigned char *ptr, *ptrEnd;
 
-    for (i = 0; i < triCount; ++i)
+    //memset(&triList[0], 0, TRI_LIST_SIZE * sizeof(TRI*));
+
+    for (i = 0; i < cvector_size(g_Mesh.faces); ++i)
     {
-        a = verts[triList[i].a];
-        b = verts[triList[i].b];
-        c = verts[triList[i].c];
+        a = g_Mesh.vertsTransformed[g_Mesh.faces[i].a];
+        b = g_Mesh.vertsTransformed[g_Mesh.faces[i].b];
+        c = g_Mesh.vertsTransformed[g_Mesh.faces[i].c];
+        j = g_Mesh.faces[i].material_offset;
 
         // Shifting by 11 gets 65536 down to 64 which fits okay as a max 128 within 200 height
         a.x = (a.x >> 2);
         a.y = (a.y >> 2);
-        a.z = min(max(16 + (a.z >> 4), 0), 31);
         b.x = (b.x >> 2);
         b.y = (b.y >> 2);
-        b.z = min(max(16 + (b.z >> 4), 0), 31);
         c.x = (c.x >> 2);
         c.y = (c.y >> 2);
-        c.z = min(max(16 + (c.z >> 4), 0), 31);
+
+        a.w += j;
+        b.w += j;
+        c.w += j;
 
         if (orient2dint(a, b, c) > 0)
             continue;
@@ -52,9 +58,9 @@ void DrawTris(V4D *verts, TRI *triList, size_t triCount)
             j = a.x;
             a.x = b.x;
             b.x = j;
-            j = a.z;
-            a.z = b.z;
-            b.z = j;
+            j = a.w;
+            a.w = b.w;
+            b.w = j;
         }
         if (a.y > c.y)
         {
@@ -64,9 +70,9 @@ void DrawTris(V4D *verts, TRI *triList, size_t triCount)
             j = a.x;
             a.x = c.x;
             c.x = j;
-            j = a.z;
-            a.z = c.z;
-            c.z = j;
+            j = a.w;
+            a.w = c.w;
+            c.w = j;
         }
         if (b.y > c.y)
         {
@@ -76,9 +82,9 @@ void DrawTris(V4D *verts, TRI *triList, size_t triCount)
             j = b.x;
             b.x = c.x;
             c.x = j;
-            j = b.z;
-            b.z = c.z;
-            c.z = j;
+            j = b.w;
+            b.w = c.w;
+            c.w = j;
         }
 
         shortHeight = b.y - a.y;
@@ -90,19 +96,18 @@ void DrawTris(V4D *verts, TRI *triList, size_t triCount)
         long_dx = (c.x - a.x) * oneover16(longHeight);
         lx = (a.x << 16);
         rx = (a.x << 16);
-        long_cx = (c.z - a.z) * oneover(longHeight);
-        lc = (a.z << 8);
-        rc = (a.z << 8);
+        long_cx = (c.w - a.w) * oneover(longHeight);
+        lc = (a.w << 8);
+        rc = (a.w << 8);
         ptr = back;
 
         ptr += (BACKBUFFER_SIZE + BACKBUFFER_WIDTH) >> 1; // Center horizontally
         ptr += (a.y * BACKBUFFER_WIDTH);
 
-
         if (shortHeight > 0) // Top Half
         {
             short_dx = (b.x - a.x) * oneover16(shortHeight);
-            short_cx = (b.z - a.z) * oneover(shortHeight);
+            short_cx = (b.w - a.w) * oneover(shortHeight);
 
             do
             {
@@ -128,10 +133,10 @@ void DrawTris(V4D *verts, TRI *triList, size_t triCount)
         if (shortHeight > 0)
         {
             short_dx = (c.x - b.x) * oneover16(shortHeight);
-            short_cx = (c.z - b.z) * oneover(shortHeight);
+            short_cx = (c.w - b.w) * oneover(shortHeight);
 
             rx = (b.x << 16);
-            rc = (b.z << 8);
+            rc = (b.w << 8);
 
             do
             {
@@ -152,3 +157,11 @@ void DrawTris(V4D *verts, TRI *triList, size_t triCount)
         }
     }
 }
+
+// void SubmitTriangle(V4D *verts, TRI *triList)
+// {
+//     triList->a = verts[0].x;
+//     triList->b = verts[1].x;
+//     triList->c = verts[2].x;
+//     triList->next = NULL;
+// }

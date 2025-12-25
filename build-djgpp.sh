@@ -60,6 +60,7 @@ for file in src/*.c; do
         echo "  Compiling $file..."
         basename="${file:t:r}"
         if ! gcc -O2 -Wall -c "$file" -o "obj/${basename}.o"; then
+        # if ! gcc -g -Wall -Wextra -c "$file" -o "obj/${basename}.o"; then
             COMPILE_ERROR=1
         fi
     fi
@@ -82,4 +83,6 @@ echo "Build successful! Output: bin/dmain.exe"
 mkdir -p "$DOS_INSTALL_DIR"
 echo "Installing bin/dmain.exe to $DOS_INSTALL_DIR..."
 cp bin/dmain.exe "$DOS_INSTALL_DIR/"
+echo "Copying assets to $DOS_INSTALL_DIR..."
+cp -r assets/* "$DOS_INSTALL_DIR/"
 echo "Installation complete."

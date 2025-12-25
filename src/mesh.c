@@ -22,7 +22,7 @@ int LoadObj(char *filename)
     int texture_indices[3]; // Unused currently
     int normal_indices[3];
     float vertex_float[3];
-    int i;
+    int i, j;
     V4D vertex;
     V4D _verts[4];
     TRI face;
@@ -40,8 +40,14 @@ int LoadObj(char *filename)
         return 1;
     }
 
+    j = 8; // Material offset
     while (fgets(line, 256, file))
     {
+        if (strncmp(line, "usemtl ", 7) == 0)
+        {
+            j += 8;
+        }
+
         // Vertex information
         if (strncmp(line, "v ", 2) == 0)
         {
@@ -72,6 +78,7 @@ int LoadObj(char *filename)
             face.a = vertex_indices[0] - 1;
             face.b = vertex_indices[1] - 1;
             face.c = vertex_indices[2] - 1;
+            face.material_offset = j;
             face.next = NULL;
 
             cvector_push_back(g_Mesh.faces, face);
