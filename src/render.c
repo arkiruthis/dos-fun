@@ -2,8 +2,14 @@
 #include "math3d.h"
 #include "mesh.h"
 
-unsigned char back[BACKBUFFER_SIZE];
-TRI *triList[TRI_LIST_SIZE];
+#ifdef __DJGPP__
+#include <sys/nearptr.h>
+#include <pc.h>
+#endif
+
+static unsigned char backBuffer[BACKBUFFER_SIZE];
+static TRI *renderQueue[TRI_LIST_SIZE];
+static int renderQueueIndex = 0;
 
 static inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
 {
@@ -25,7 +31,9 @@ void DrawTris()
     V4D a, b, c;
     unsigned char *ptr, *ptrEnd;
 
-    //memset(&triList[0], 0, TRI_LIST_SIZE * sizeof(TRI*));
+    memset(&backBuffer[0], 0, BACKBUFFER_SIZE);
+    memset(&renderQueue[0], 0, TRI_LIST_SIZE * sizeof(TRI*));
+    renderQueueIndex = 0;
 
     for (i = 0; i < cvector_size(g_Mesh.faces); ++i)
     {
@@ -99,7 +107,7 @@ void DrawTris()
         long_cx = (c.w - a.w) * oneover(longHeight);
         lc = (a.w << 8);
         rc = (a.w << 8);
-        ptr = back;
+        ptr = backBuffer;
 
         ptr += (BACKBUFFER_SIZE + BACKBUFFER_WIDTH) >> 1; // Center horizontally
         ptr += (a.y * BACKBUFFER_WIDTH);
@@ -158,10 +166,21 @@ void DrawTris()
     }
 }
 
-// void SubmitTriangle(V4D *verts, TRI *triList)
+void BlitBackBufferToVGA()
+{
+#ifdef __DJGPP__
+    const unsigned char *vga = (unsigned char *)(__djgpp_conventional_base + 0xA0000);
+#else // Watcom C/C++
+    const unsigned char *vga = (unsigned char *)0xA0000;
+#endif
+    
+    memcpy((void *)vga, (void *)backBuffer, BACKBUFFER_SIZE);
+}
+
+// void SubmitTriangle(V4D *verts, TRI *renderQueue)
 // {
-//     triList->a = verts[0].x;
-//     triList->b = verts[1].x;
-//     triList->c = verts[2].x;
-//     triList->next = NULL;
+//     renderQueue->a = verts[0].x;
+//     renderQueue->b = verts[1].x;
+//     renderQueue->c = verts[2].x;
+//     renderQueue->next = NULL;
 // }

@@ -10,12 +10,11 @@
 #define BACKBUFFER_SIZE (BACKBUFFER_WIDTH * BACKBUFFER_HEIGHT)
 #define TRI_LIST_SIZE 256
 
-extern unsigned char back[];
-
 struct V4D;
 struct TRI;
 
-// void SubmitTriangle(struct V4D *verts, struct TRI *triList);
+// void SubmitTriangle(struct V4D *verts, struct TRI *renderQueue);
 void DrawTris();
+void BlitBackBufferToVGA();
 
 #endif // RENDER_H

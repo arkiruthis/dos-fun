@@ -2,6 +2,7 @@
 #ifdef __DJGPP__
 #include <dpmi.h>
 #include <go32.h>
+#include <pc.h>
 #else // Watcom C/C++
 #include <i86.h>
 #include <conio.h>

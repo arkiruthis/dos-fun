@@ -15,14 +15,9 @@
 
 int main(void)
 {
-  unsigned char *vga;
-  unsigned char *ptr;
-  int i, x, y;
+  int i;
   int t = 0;
   time_t current_time;
-
-  V4D cubeTransformed[8];
-  V4D normalsTransformed[8];
   V3D lightDir = {float2fix(0.707f), float2fix(0.0f), -float2fix(0.707f)};
   MAT43 mat = {0};
 
@@ -33,9 +28,6 @@ int main(void)
 // Map physical 0xA0000 into our flat address space
 #ifdef __DJGPP__
   __djgpp_nearptr_enable();
-  vga = (unsigned char *)(__djgpp_conventional_base + 0xA0000);
-#else // Watcom C/C++
-  vga = (unsigned char *)0xA0000;
 #endif
 
   // Set VGA mode 13h
@@ -56,8 +48,6 @@ int main(void)
     // EulerToMat(&mat, 256 + t, 55 + t, 77 + (t >> 2));
     EulerToMat(&mat, t, 0, 20);
 
-    memset(&back[0], 0, BACKBUFFER_SIZE);
-
     for (i = 0; i < cvector_size(g_Mesh.verts); ++i)
     {
       MultV4DMatC(&g_Mesh.verts[i], &g_Mesh.vertsTransformed[i], &mat);
@@ -71,8 +61,8 @@ int main(void)
     // Wait for vertical retrace to avoid tearing
     WaitVRetrace();
 
-    // Blit back buffer -> VGA in one go
-    memcpy(vga, &back[0], BACKBUFFER_SIZE);
+    // Blit backBuffer buffer -> VGA in one go
+    BlitBackBufferToVGA();
     ++t;
   }
   current_time = time(NULL) - current_time;
@@ -85,7 +75,7 @@ int main(void)
   FreeMesh();
 
   printf("Returned to text mode. Program finished.\n");
-  printf("Elapsed time: %ld seconds\n", current_time);
+  printf("Elapsed time: %u seconds\n", current_time);
   printf("Frame rate: %.2f FPS\n", (double)t / (double)current_time);
 
   return 0;

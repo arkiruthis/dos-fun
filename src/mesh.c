@@ -19,12 +19,10 @@ int LoadObj(char *filename)
     FILE *file;
     char line[256];
     int vertex_indices[3];
-    int texture_indices[3]; // Unused currently
     int normal_indices[3];
     float vertex_float[3];
     int i, j;
     V4D vertex;
-    V4D _verts[4];
     TRI face;
     V4D *tempNormals = NULL;
     V4D *remappedNormals = NULL;
