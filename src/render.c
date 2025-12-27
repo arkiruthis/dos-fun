@@ -38,7 +38,7 @@ void DrawTris()
     // First step is to go through our faces and, if CCW, add to our render queue.
     // We'll use the 'ol radix trick to sort them into buckets without qsort.
 
-    for (i = 0; i < cvector_size(g_Mesh.faces) && i < RADIX_DEPTH; ++i)
+    for (i = 0; i < cvector_size(g_Mesh.faces); ++i)
     {
         tri = &g_Mesh.faces[i];
 
@@ -47,12 +47,12 @@ void DrawTris()
         c = g_Mesh.vertsTransformed[tri->c];
         j = tri->material_offset;
         k = (a.z + b.z + c.z); // aggregate depths
-        k = 127 + (k >> 3);
+        k = clamp(127 + (k >> 3), 0, RADIX_DEPTH - 1);
         a.w += j;
         b.w += j;
         c.w += j;
 
-        if (orient2dint(a, b, c) > 0)
+        if (orient2dint(a, b, c) < 0)
             continue;
 
         // Sort vertices by Y
@@ -178,6 +178,7 @@ void DrawTris()
                     lc += long_cx;
                     rc += short_cx;
                     ptr += BACKBUFFER_WIDTH;
+
                 } while (--shortHeight > 0);
             }
 

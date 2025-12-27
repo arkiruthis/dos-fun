@@ -50,18 +50,18 @@ int LoadObj(char *filename)
         if (strncmp(line, "v ", 2) == 0)
         {
             sscanf(line, "v %f %f %f", &vertex_float[0], &vertex_float[1], &vertex_float[2]);
-            vertex.x = float2fix(vertex_float[0]);
-            vertex.y = float2fix(vertex_float[1]);
-            vertex.z = float2fix(vertex_float[2]);
+            vertex.x = -float2fix(vertex_float[0]);
+            vertex.y = -float2fix(vertex_float[1]);
+            vertex.z = -float2fix(vertex_float[2]);
             cvector_push_back(g_Mesh.verts, vertex);
         }
         // Vertex Normal information
         if (strncmp(line, "vn ", 3) == 0)
         {
             sscanf(line, "vn %f %f %f", &vertex_float[0], &vertex_float[1], &vertex_float[2]);
-            vertex.x = float2fix(vertex_float[0]);
-            vertex.y = float2fix(vertex_float[1]);
-            vertex.z = float2fix(vertex_float[2]);
+            vertex.x = -float2fix(vertex_float[0]);
+            vertex.y = -float2fix(vertex_float[1]);
+            vertex.z = -float2fix(vertex_float[2]);
             cvector_push_back(tempNormals, vertex);
         }
         // // Face information

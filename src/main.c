@@ -45,8 +45,8 @@ int main(void)
   // Simple animation loop
   while (!kbhit())
   {
-    // EulerToMat(&mat, 256 + t, 55 + t, 77 + (t >> 2));
-    EulerToMat(&mat, t, 0, 20);
+    //EulerToMat(&mat, 256 + t, 55 + t, 77 + (t >> 2));
+    EulerToMat(&mat, t, fixsin(t), (t >> 2));
 
     for (i = 0; i < cvector_size(g_Mesh.verts); ++i)
     {
@@ -54,6 +54,8 @@ int main(void)
       MultV4DMatC(&g_Mesh.vertNormals[i], &g_Mesh.vertNormalsTransformed[i], &mat);
       g_Mesh.vertsTransformed[i].w = max(0, DotProduct((V3D *)&g_Mesh.vertNormalsTransformed[i], &lightDir));
       g_Mesh.vertsTransformed[i].w = min(g_Mesh.vertsTransformed[i].w >> 5, 15);
+      g_Mesh.vertsTransformed[i].x >>= 2;
+      g_Mesh.vertsTransformed[i].y >>= 2;
     }
 
     DrawTris();
