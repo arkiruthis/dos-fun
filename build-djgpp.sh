@@ -59,7 +59,7 @@ for file in src/*.c; do
     if [[ -f "$file" ]]; then
         echo "  Compiling $file..."
         basename="${file:t:r}"
-        if ! gcc -O2 -Wall -c "$file" -o "obj/${basename}.o"; then
+        if ! gcc -O3 -Wall -c "$file" -o "obj/${basename}.o"; then
         # if ! gcc -g -Wall -Wextra -c "$file" -o "obj/${basename}.o"; then
             COMPILE_ERROR=1
         fi

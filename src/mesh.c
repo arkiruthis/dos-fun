@@ -38,12 +38,12 @@ int LoadObj(char *filename)
         return 1;
     }
 
-    j = 8; // Material offset
+    j = 0; // Material offset
     while (fgets(line, 256, file))
     {
         if (strncmp(line, "usemtl ", 7) == 0)
         {
-            j += 8;
+            j += 16;
         }
 
         // Vertex information
