@@ -102,8 +102,9 @@ typedef struct V4D
 typedef struct TRI
 {
     unsigned short a, b, c, material_offset;
-    fix depth;
-    void *next;
+    V2D v1, v2, v3; // Used in render pass
+    fix c1, c2, c3; // Used in render pass
+    void *next;     // Used in render pass
 } TRI;
 
 typedef struct POLYGON

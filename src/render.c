@@ -8,7 +8,7 @@
 #endif
 
 static unsigned char backBuffer[BACKBUFFER_SIZE];
-static TRI *renderQueue[TRI_LIST_SIZE];
+static TRI *renderQueue[RADIX_DEPTH];
 static int renderQueueIndex = 0;
 
 static inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
@@ -29,27 +29,25 @@ void DrawTris()
     fix long_cx, short_cx, lc, rc;
     fix shortHeight, longHeight;
     V4D a, b, c;
+    TRI *tri = NULL;
     unsigned char *ptr, *ptrEnd;
 
     memset(&backBuffer[0], 0, BACKBUFFER_SIZE);
-    memset(&renderQueue[0], 0, TRI_LIST_SIZE * sizeof(TRI*));
-    renderQueueIndex = 0;
+    memset(&renderQueue[0], 0, RADIX_DEPTH * sizeof(TRI *));
 
-    for (i = 0; i < cvector_size(g_Mesh.faces); ++i)
+    // First step is to go through our faces and, if CCW, add to our render queue.
+    // We'll use the 'ol radix trick to sort them into buckets without qsort.
+
+    for (i = 0; i < cvector_size(g_Mesh.faces) && i < RADIX_DEPTH; ++i)
     {
-        a = g_Mesh.vertsTransformed[g_Mesh.faces[i].a];
-        b = g_Mesh.vertsTransformed[g_Mesh.faces[i].b];
-        c = g_Mesh.vertsTransformed[g_Mesh.faces[i].c];
-        j = g_Mesh.faces[i].material_offset;
+        tri = &g_Mesh.faces[i];
 
-        // Shifting by 11 gets 65536 down to 64 which fits okay as a max 128 within 200 height
-        a.x = (a.x >> 2);
-        a.y = (a.y >> 2);
-        b.x = (b.x >> 2);
-        b.y = (b.y >> 2);
-        c.x = (c.x >> 2);
-        c.y = (c.y >> 2);
-
+        a = g_Mesh.vertsTransformed[tri->a];
+        b = g_Mesh.vertsTransformed[tri->b];
+        c = g_Mesh.vertsTransformed[tri->c];
+        j = tri->material_offset;
+        k = (a.z + b.z + c.z); // aggregate depths
+        k = 127 + (k >> 3);
         a.w += j;
         b.w += j;
         c.w += j;
@@ -95,73 +93,95 @@ void DrawTris()
             c.w = j;
         }
 
-        shortHeight = b.y - a.y;
         longHeight = c.y - a.y;
 
         if (longHeight <= 0)
             continue;
 
-        long_dx = (c.x - a.x) * oneover16(longHeight);
-        lx = (a.x << 16);
-        rx = (a.x << 16);
-        long_cx = (c.w - a.w) * oneover(longHeight);
-        lc = (a.w << 8);
-        rc = (a.w << 8);
-        ptr = backBuffer;
+        tri->v1 = (V2D){a.x, a.y};
+        tri->v2 = (V2D){b.x, b.y};
+        tri->v3 = (V2D){c.x, c.y};
+        tri->c1 = a.w;
+        tri->c2 = b.w;
+        tri->c3 = c.w;
 
-        ptr += (BACKBUFFER_SIZE + BACKBUFFER_WIDTH) >> 1; // Center horizontally
-        ptr += (a.y * BACKBUFFER_WIDTH);
+        // Add to the render queue
+        tri->next = renderQueue[k];
+        renderQueue[k] = tri;
+    }
 
-        if (shortHeight > 0) // Top Half
+    for (i = RADIX_DEPTH - 1; i != 0; --i)
+    {
+        while (renderQueue[i])
         {
-            short_dx = (b.x - a.x) * oneover16(shortHeight);
-            short_cx = (b.w - a.w) * oneover(shortHeight);
+            tri = renderQueue[i];
+            shortHeight = tri->v2.y - tri->v1.y;
+            longHeight = tri->v3.y - tri->v1.y;
 
-            do
+            long_dx = (tri->v3.x - tri->v1.x) * oneover16(longHeight);
+            lx = (tri->v1.x << 16);
+            rx = (tri->v1.x << 16);
+            long_cx = (tri->c3 - tri->c1) * oneover(longHeight);
+            lc = (tri->c1 << 8);
+            rc = (tri->c1 << 8);
+            ptr = backBuffer;
+
+            ptr += (BACKBUFFER_SIZE + BACKBUFFER_WIDTH) >> 1; // Center horizontally
+            ptr += (tri->v1.y * BACKBUFFER_WIDTH);
+
+            if (shortHeight > 0) // Top Half
             {
-                j = abs((rx >> 16) - (lx >> 16));
-                k = min(lx, rx);
-                ptrEnd = ptr + (k >> 16);
-                if (lx <= rx)
-                    hline(j, lc, rc, ptrEnd);
-                else
-                    hline(j, rc, lc, ptrEnd);
+                short_dx = (tri->v2.x - tri->v1.x) * oneover16(shortHeight);
+                short_cx = (tri->c2 - tri->c1) * oneover(shortHeight);
 
-                lx += long_dx;
-                rx += short_dx;
-                lc += long_cx;
-                rc += short_cx;
-                ptr += BACKBUFFER_WIDTH;
-            } while (--shortHeight > 0);
-        }
+                do
+                {
+                    j = abs((rx >> 16) - (lx >> 16));
+                    k = min(lx, rx);
+                    ptrEnd = ptr + (k >> 16);
+                    if (lx <= rx)
+                        hline(j, lc, rc, ptrEnd);
+                    else
+                        hline(j, rc, lc, ptrEnd);
 
-        // Bottom Half
+                    lx += long_dx;
+                    rx += short_dx;
+                    lc += long_cx;
+                    rc += short_cx;
+                    ptr += BACKBUFFER_WIDTH;
+                } while (--shortHeight > 0);
+            }
 
-        shortHeight = c.y - b.y;
-        if (shortHeight > 0)
-        {
-            short_dx = (c.x - b.x) * oneover16(shortHeight);
-            short_cx = (c.w - b.w) * oneover(shortHeight);
+            // Bottom Half
 
-            rx = (b.x << 16);
-            rc = (b.w << 8);
-
-            do
+            shortHeight = tri->v3.y - tri->v2.y;
+            if (shortHeight > 0)
             {
-                j = abs((rx >> 16) - (lx >> 16));
-                k = min(lx, rx);
-                ptrEnd = ptr + (k >> 16);
-                if (lx <= rx)
-                    hline(j, lc, rc, ptrEnd);
-                else
-                    hline(j, rc, lc, ptrEnd);
+                short_dx = (tri->v3.x - tri->v2.x) * oneover16(shortHeight);
+                short_cx = (tri->c3 - tri->c2) * oneover(shortHeight);
 
-                lx += long_dx;
-                rx += short_dx;
-                lc += long_cx;
-                rc += short_cx;
-                ptr += BACKBUFFER_WIDTH;
-            } while (--shortHeight > 0);
+                rx = (tri->v2.x << 16);
+                rc = (tri->c2 << 8);
+
+                do
+                {
+                    j = abs((rx >> 16) - (lx >> 16));
+                    k = min(lx, rx);
+                    ptrEnd = ptr + (k >> 16);
+                    if (lx <= rx)
+                        hline(j, lc, rc, ptrEnd);
+                    else
+                        hline(j, rc, lc, ptrEnd);
+
+                    lx += long_dx;
+                    rx += short_dx;
+                    lc += long_cx;
+                    rc += short_cx;
+                    ptr += BACKBUFFER_WIDTH;
+                } while (--shortHeight > 0);
+            }
+
+            renderQueue[i] = tri->next;
         }
     }
 }
@@ -173,7 +193,7 @@ void BlitBackBufferToVGA()
 #else // Watcom C/C++
     const unsigned char *vga = (unsigned char *)0xA0000;
 #endif
-    
+
     memcpy((void *)vga, (void *)backBuffer, BACKBUFFER_SIZE);
 }
 

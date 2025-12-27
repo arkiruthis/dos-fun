@@ -209,6 +209,10 @@ void MultV4DMatC(V4D *v, V4D *dest, MAT43 *mat)
     dest->y = fixmultSML(v->x, mat->m21) + fixmultSML(v->y, mat->m22) + fixmultSML(v->z, mat->m23) + mat->ty;
     dest->z = fixmultSML(v->x, mat->m31) + fixmultSML(v->y, mat->m32) + fixmultSML(v->z, mat->m33) + mat->tz;
     dest->w = v->w;
+
+    // Cheaply resize down to something that fits the viewport (assuming no dimension > 1 [fixedpoint])
+    dest->x >>= 2;
+    dest->y >>= 2;
 }
 
 void MultV4DMat(V4D *v, V4D *dest, MAT44 *mat)
