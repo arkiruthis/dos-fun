@@ -17,7 +17,7 @@ static inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
 
     while (length-- > 0)
     {
-        *ptr++ = ((c1 + (rand() & 0xFF)) >> 8);
+        *ptr++ = c1 >> 8;
         c1 += xstep;
     }
 }
@@ -32,7 +32,29 @@ void DrawTris()
     TRI *tri = NULL;
     unsigned char *ptr, *ptrEnd;
 
-    memset(&backBuffer[0], 0, BACKBUFFER_SIZE);
+    // memset(&backBuffer[0], 0, BACKBUFFER_SIZE);
+    ptr = backBuffer + BACKBUFFER_WIDTH * 149;
+    lc = 87 << 8;
+    k = 55;
+    for (i = 0; i < 149; ++i)
+    {
+        memset(ptr, (unsigned char)(lc >> 8), BACKBUFFER_WIDTH);
+        lc -= k;
+        k = max(0, k - 1);
+        ptr -= BACKBUFFER_WIDTH;
+    }
+
+    ptr = backBuffer + BACKBUFFER_WIDTH * 150;
+    lc = 88 << 8;
+    k = 128;
+    for (i = 0; i < 50; ++i)
+    {
+        memset(ptr, (unsigned char)(lc >> 8), BACKBUFFER_WIDTH);
+        lc += k;
+        k = max(0, k - 5);
+        ptr += BACKBUFFER_WIDTH;
+    }
+
     memset(&renderQueue[0], 0, RADIX_DEPTH * sizeof(TRI *));
 
     // First step is to go through our faces and, if CCW, add to our render queue.

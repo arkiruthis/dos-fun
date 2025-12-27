@@ -18,8 +18,8 @@ void SetupTables()
         g_oneOver16[i] = 65536.f / i;
     }
 
-    g_oneOver[0] = 0; // Basically a non-op if dividing by zero
-    g_oneOver16[0] = 0;
+    g_oneOver[0] = 256; // Basically a non-op if dividing by zero
+    g_oneOver16[0] = 65536;
 
     // Setup sine table
     for (i = 0; i < SINETABLE_SIZE; ++i)
