@@ -17,7 +17,7 @@ static inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
 
     while (length-- > 0)
     {
-        *ptr++ = (c1 >> 8);
+        *ptr++ = ((c1 + (rand() & 0xFF)) >> 8);
         c1 += xstep;
     }
 }

@@ -17,6 +17,7 @@ int main(void)
 {
   int i;
   int t = 0;
+  int t2;
   time_t current_time;
   V3D lightDir = {float2fix(0.707f), float2fix(0.0f), -float2fix(0.707f)};
   MAT43 mat = {0};
@@ -46,7 +47,7 @@ int main(void)
   while (!kbhit())
   {
     //EulerToMat(&mat, 256 + t, 55 + t, 77 + (t >> 2));
-    EulerToMat(&mat, t, 20, 0);
+    EulerToMat(&mat, t, 16, 0);
 
     for (i = 0; i < cvector_size(g_Mesh.verts); ++i)
     {
