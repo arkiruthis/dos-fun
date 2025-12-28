@@ -4,6 +4,7 @@
         "*.usf": "hlsl",
         "*.ush": "hlsl",
         "math.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "mesh.h": "c"
     }
 }

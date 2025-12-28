@@ -1,7 +1,6 @@
 #include <conio.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 
 #ifdef __DJGPP__
 #include <sys/nearptr.h>
@@ -17,14 +16,14 @@ int main(void)
 {
   int i;
   int t = 0;
-  int t2;
-  time_t current_time;
+  unsigned long start_ticks, elapsed_ticks;
+  double elapsed_secs;
   V3D lightDir = {float2fix(0.707f), float2fix(0.0f), -float2fix(0.707f)};
   MAT43 mat = {0};
 
   SetupTables();
 
-  LoadObj("sphere.obj");
+  LoadObj("a10.obj");
 
 // Map physical 0xA0000 into our flat address space
 #ifdef __DJGPP__
@@ -41,7 +40,9 @@ int main(void)
     return 1;
   }
 
-  current_time = time(NULL);
+  start_ticks = GetTicks();
+
+  ClearRenderQueue(); // Only need to do this once, it should be clean after each loop.
 
   // Simple animation loop
   while (!kbhit())
@@ -66,7 +67,8 @@ int main(void)
     BlitBackBufferToVGA();
     ++t;
   }
-  current_time = time(NULL) - current_time;
+  elapsed_ticks = GetTicks() - start_ticks;
+  elapsed_secs = (double)elapsed_ticks / TICKS_PER_SEC;
 
   getch();
 
@@ -76,8 +78,8 @@ int main(void)
   FreeMesh();
 
   printf("Returned to text mode. Program finished.\n");
-  printf("Elapsed time: %u seconds\n", current_time);
-  printf("Frame rate: %.2f FPS\n", (double)t / (double)current_time);
+  printf("Elapsed time: %.2f seconds (%lu ticks)\n", elapsed_secs, elapsed_ticks);
+  printf("Frame rate: %.2f FPS\n", (double)t / elapsed_secs);
 
   return 0;
 }

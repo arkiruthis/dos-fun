@@ -12,5 +12,6 @@
 
 void DrawTris();
 void BlitBackBufferToVGA();
+void ClearRenderQueue();
 
 #endif // RENDER_H

@@ -9,7 +9,6 @@
 
 static unsigned char backBuffer[BACKBUFFER_SIZE];
 static TRI *renderQueue[RADIX_DEPTH];
-static int renderQueueIndex = 0;
 
 static inline void hline(int length, fix c1, fix c2, unsigned char *ptr)
 {
@@ -32,7 +31,7 @@ void DrawTris()
     TRI *tri = NULL;
     unsigned char *ptr, *ptrEnd;
 
-    // memset(&backBuffer[0], 0, BACKBUFFER_SIZE);
+    // Draw a sky gradient, somewhat reminiscent of F-117 or other 90s DOS flight sims. :) 
     ptr = backBuffer + BACKBUFFER_WIDTH * 149;
     lc = 87 << 8;
     k = 55;
@@ -44,6 +43,7 @@ void DrawTris()
         ptr -= BACKBUFFER_WIDTH;
     }
 
+    // Horizon to ground gradient
     ptr = backBuffer + BACKBUFFER_WIDTH * 150;
     lc = 88 << 8;
     k = 128;
@@ -54,8 +54,6 @@ void DrawTris()
         k = max(0, k - 5);
         ptr += BACKBUFFER_WIDTH;
     }
-
-    memset(&renderQueue[0], 0, RADIX_DEPTH * sizeof(TRI *));
 
     // First step is to go through our faces and, if CCW, add to our render queue.
     // We'll use the 'ol radix trick to sort them into buckets without qsort.
@@ -220,10 +218,7 @@ void BlitBackBufferToVGA()
     memcpy((void *)vga, (void *)backBuffer, BACKBUFFER_SIZE);
 }
 
-// void SubmitTriangle(V4D *verts, TRI *renderQueue)
-// {
-//     renderQueue->a = verts[0].x;
-//     renderQueue->b = verts[1].x;
-//     renderQueue->c = verts[2].x;
-//     renderQueue->next = NULL;
-// }
+void ClearRenderQueue()
+{
+    memset(&renderQueue[0], 0, RADIX_DEPTH * sizeof(TRI *));
+}

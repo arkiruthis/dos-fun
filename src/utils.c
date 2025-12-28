@@ -3,6 +3,7 @@
 #include <dpmi.h>
 #include <go32.h>
 #include <pc.h>
+#include <sys/farptr.h>
 #else // Watcom C/C++
 #include <i86.h>
 #include <conio.h>
@@ -121,5 +122,15 @@ void WaitVRetrace(void)
   while (inp(0x3DA) & 0x08);
   // Wait until vertical retrace starts
   while (!(inp(0x3DA) & 0x08));
+#endif
+}
+
+// Returns the BIOS tick counter at 0040:006C (~18.2 ticks per second)
+unsigned long GetTicks(void)
+{
+#ifdef __DJGPP__
+  return _farpeekl(_dos_ds, 0x46C);
+#else // Watcom C/C++
+  return *(volatile unsigned long far *)0x0040006CL;
 #endif
 }
