@@ -1,10 +1,12 @@
 # Dos Fun
 
-A developer's playground for getting to know DOS and DJGPP/Watcom C, with a main interest in 3D rendering on 320×200 mode 13h VGA. The project targets 486-class hardware with an aim towards 386 compatibility.
+A fun little nostalgic project started over the Christmas season to look at DOS and DJGPP/Watcom C, with a main interest in 3D rendering on 320×200 mode 13h VGA. The project targets 486-class hardware with an aim towards 386 compatibility. It's mostly inspired by 90s gouraud renderers that you would find in games like Tie Fighter, or the intro to the DOS version of Cybercon III which had a nice little gouraud rendered figure.
 
 Utilizes the [C89 dynamic array](https://github.com/eteran/c-vector) by Evan Teran.
 
 ## Overview
+
+![A10 Warthog rotating in VGA Mode 13h](A10.gif)
 
 This project explores classic DOS-era 3D graphics programming, focusing on:
 - **VGA Mode 13h**: 320×200 resolution with 256 colors
