@@ -2,6 +2,8 @@
 
 A fun little nostalgic project started over the Christmas season to look at DOS and DJGPP/Watcom C, with a main interest in 3D rendering on 320×200 mode 13h VGA. The project targets 486-class hardware with an aim towards 386 compatibility. It's mostly inspired by 90s gouraud renderers that you would find in games like Tie Fighter, or the intro to the DOS version of Cybercon III which had a nice little gouraud rendered figure.
 
+Re-uses a lot of code from my Acorn Archimedes projects, so not all the math stuff is being used nor updated for 24:8 precision.
+
 Utilizes the [C89 dynamic array](https://github.com/eteran/c-vector) by Evan Teran.
 
 ## Overview
@@ -94,3 +96,6 @@ Copy the contents of `DOS_INSTALL_DIR` to your DOS environment and run:
 
 The program will display a rotating 3D model in VGA mode 13h. Press any key to exit.
 
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
