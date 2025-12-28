@@ -13,7 +13,7 @@ Utilizes the [C89 dynamic array](https://github.com/eteran/c-vector) by Evan Ter
 This project explores classic DOS-era 3D graphics programming, focusing on:
 - **VGA Mode 13h**: 320×200 resolution with 256 colors
 - **Fixed-point mathematics**: For fast 3D calculations without floating-point units
-- **Software rendering**: Custom triangle rasterizer with flat shading
+- **Software rendering**: Custom triangle rasterizer with [gouraud shading](https://en.wikipedia.org/wiki/Gouraud_shading)
 - **Performance optimization**: Targeting 486-class CPUs, with 386 compatibility goals
 
 ## QuickStart
