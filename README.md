@@ -16,6 +16,10 @@ This project explores classic DOS-era 3D graphics programming, focusing on:
 - **Software rendering**: Custom triangle rasterizer with flat shading
 - **Performance optimization**: Targeting 486-class CPUs, with 386 compatibility goals
 
+## QuickStart
+
+The releases section has a [dos-fun.zip](https://github.com/arkiruthis/dos-fun/releases/tag/v1.0.0) that you can just unpack into a DOSBOX folder and run from the emulator. It includes CWSDPMI.EXE and just includes the DJGPP version.
+
 ## Thanks
 - ray//.tSCc. - For this fascinating [2005 demo coding article](http://alive.atari.org/alive11/frstclip.php) which provided a much better radix sort alternative to qsort() for speeding up the triangle depth pass.
 - Chris Egerter's [graphics tutorial](https://www.gamedev.net/tutorials/programming/graphics/gouraud-shaded-polygons-r323/) (October 13, 1994) which I found generally a bit better than the usual guides which overly complicate things.
