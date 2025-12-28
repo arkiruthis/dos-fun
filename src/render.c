@@ -118,9 +118,12 @@ void DrawTris()
     if (longHeight <= 0)
       continue;
 
-    tri->v1 = (V2D){a.x, a.y};
-    tri->v2 = (V2D){b.x, b.y};
-    tri->v3 = (V2D){c.x, c.y};
+    tri->v1.x = a.x;
+    tri->v1.y = a.y;
+    tri->v2.x = b.x;
+    tri->v2.y = b.y;
+    tri->v3.x = c.x;
+    tri->v3.y = c.y;
     tri->c1 = a.w;
     tri->c2 = b.w;
     tri->c3 = c.w;

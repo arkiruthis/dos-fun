@@ -134,7 +134,7 @@ unsigned long GetTicks(void)
 {
 #ifdef __DJGPP__
   return _farpeekl(_dos_ds, 0x46C);
-#else // Watcom C/C++
-  return *(volatile unsigned long far *)0x0040006CL;
+#else // Watcom C/C++ (32-bit protected mode - linear address 0x46C)
+  return *(volatile unsigned long *)0x46C;
 #endif
 }
