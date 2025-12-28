@@ -7,103 +7,100 @@ Mesh g_Mesh = {0};
 
 void FreeMesh(void)
 {
-    cvector_free(g_Mesh.verts);
-    cvector_free(g_Mesh.faces);
-    cvector_free(g_Mesh.vertsTransformed);
-    cvector_free(g_Mesh.vertNormals);
-    cvector_free(g_Mesh.vertNormalsTransformed);
+  cvector_free(g_Mesh.verts);
+  cvector_free(g_Mesh.faces);
+  cvector_free(g_Mesh.vertsTransformed);
+  cvector_free(g_Mesh.vertNormals);
+  cvector_free(g_Mesh.vertNormalsTransformed);
 }
 
 int LoadObj(char *filename)
 {
-    FILE *file;
-    char line[256];
-    int vertex_indices[3];
-    int normal_indices[3];
-    float vertex_float[3];
-    int i, j;
-    V4D vertex;
-    TRI face;
-    V4D *tempNormals = NULL;
-    V4D *remappedNormals = NULL;
+  FILE *file;
+  char line[256];
+  int vertex_indices[3];
+  int normal_indices[3];
+  float vertex_float[3];
+  int i, j;
+  V4D vertex;
+  TRI face;
+  V4D *tempNormals = NULL;
+  V4D *remappedNormals = NULL;
 
-    g_Mesh.verts = NULL;
-    g_Mesh.faces = NULL;
-    g_Mesh.vertsTransformed = NULL;
+  g_Mesh.verts = NULL;
+  g_Mesh.faces = NULL;
+  g_Mesh.vertsTransformed = NULL;
 
-    file = fopen(filename, "r");
-    if (file == NULL)
+  file = fopen(filename, "r");
+  if (file == NULL)
+  {
+    printf("ERROR - Unable to find file.\n");
+    return 1;
+  }
+
+  j = 0; // Material offset
+  while (fgets(line, 256, file))
+  {
+    if (strncmp(line, "usemtl ", 7) == 0)
     {
-        printf("ERROR - Unable to find file.\n");
-        return 1;
+      j += 16;
     }
 
-    j = 0; // Material offset
-    while (fgets(line, 256, file))
+    // Vertex information
+    if (strncmp(line, "v ", 2) == 0)
     {
-        if (strncmp(line, "usemtl ", 7) == 0)
-        {
-            j += 16;
-        }
-
-        // Vertex information
-        if (strncmp(line, "v ", 2) == 0)
-        {
-            sscanf(line, "v %f %f %f", &vertex_float[0], &vertex_float[1], &vertex_float[2]);
-            vertex.x = -float2fix(vertex_float[0]);
-            vertex.y = -float2fix(vertex_float[1]);
-            vertex.z = -float2fix(vertex_float[2]);
-            cvector_push_back(g_Mesh.verts, vertex);
-        }
-        // Vertex Normal information
-        if (strncmp(line, "vn ", 3) == 0)
-        {
-            sscanf(line, "vn %f %f %f", &vertex_float[0], &vertex_float[1], &vertex_float[2]);
-            vertex.x = -float2fix(vertex_float[0]);
-            vertex.y = -float2fix(vertex_float[1]);
-            vertex.z = -float2fix(vertex_float[2]);
-            cvector_push_back(tempNormals, vertex);
-        }
-        // // Face information
-        if (strncmp(line, "f ", 2) == 0)
-        {
-            sscanf(
-                line, "f %d//%d %d//%d %d//%d",
-                &vertex_indices[0], &normal_indices[0],
-                &vertex_indices[1], &normal_indices[1],
-                &vertex_indices[2], &normal_indices[2]);
-
-            face.a = vertex_indices[0] - 1;
-            face.b = vertex_indices[1] - 1;
-            face.c = vertex_indices[2] - 1;
-            face.material_offset = j;
-            face.next = NULL;
-
-            cvector_push_back(g_Mesh.faces, face);
-
-            // Remap normals to match vertex indices
-            if (remappedNormals == NULL)
-            {
-                cvector_reserve(remappedNormals, cvector_size(g_Mesh.verts));
-                cvector_set_size(remappedNormals, cvector_size(g_Mesh.verts));
-            }
-            for (i = 0; i < 3; i++)
-            {
-                int vert_idx = vertex_indices[i] - 1;
-                int norm_idx = normal_indices[i] - 1;
-                remappedNormals[vert_idx] = tempNormals[norm_idx];
-            }
-        }
+      sscanf(line, "v %f %f %f", &vertex_float[0], &vertex_float[1], &vertex_float[2]);
+      vertex.x = -float2fix(vertex_float[0]);
+      vertex.y = -float2fix(vertex_float[1]);
+      vertex.z = -float2fix(vertex_float[2]);
+      cvector_push_back(g_Mesh.verts, vertex);
     }
+    // Vertex Normal information
+    if (strncmp(line, "vn ", 3) == 0)
+    {
+      sscanf(line, "vn %f %f %f", &vertex_float[0], &vertex_float[1], &vertex_float[2]);
+      vertex.x = -float2fix(vertex_float[0]);
+      vertex.y = -float2fix(vertex_float[1]);
+      vertex.z = -float2fix(vertex_float[2]);
+      cvector_push_back(tempNormals, vertex);
+    }
+    // // Face information
+    if (strncmp(line, "f ", 2) == 0)
+    {
+      sscanf(line, "f %d//%d %d//%d %d//%d", &vertex_indices[0], &normal_indices[0],
+             &vertex_indices[1], &normal_indices[1], &vertex_indices[2], &normal_indices[2]);
 
-    // Replace vertNormals with remapped version
-    g_Mesh.vertNormals = remappedNormals;
-    cvector_free(tempNormals);
+      face.a = vertex_indices[0] - 1;
+      face.b = vertex_indices[1] - 1;
+      face.c = vertex_indices[2] - 1;
+      face.material_offset = j;
+      face.next = NULL;
 
-    cvector_copy(g_Mesh.verts, g_Mesh.vertsTransformed);
-    cvector_copy(g_Mesh.vertNormals, g_Mesh.vertNormalsTransformed);
+      cvector_push_back(g_Mesh.faces, face);
 
-    fclose(file);
+      // Remap normals to match vertex indices
+      if (remappedNormals == NULL)
+      {
+        cvector_reserve(remappedNormals, cvector_size(g_Mesh.verts));
+        cvector_set_size(remappedNormals, cvector_size(g_Mesh.verts));
+      }
+      for (i = 0; i < 3; i++)
+      {
+        int vert_idx = vertex_indices[i] - 1;
+        int norm_idx = normal_indices[i] - 1;
+        remappedNormals[vert_idx] = tempNormals[norm_idx];
+      }
+    }
+  }
 
-    return 0;
+  // Replace vertNormals with remapped version
+  g_Mesh.vertNormals = remappedNormals;
+  cvector_free(tempNormals);
+
+  cvector_copy(g_Mesh.verts, g_Mesh.vertsTransformed);
+  cvector_copy(g_Mesh.vertNormals, g_Mesh.vertNormalsTransformed);
+
+  fclose(file);
+
+  return 0;
 }

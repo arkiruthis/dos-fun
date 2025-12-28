@@ -6,7 +6,7 @@
 
 void SetVideoMode(int mode);
 
-int LoadPalette(const char* filename);
+int LoadPalette(const char *filename);
 
 void SetPalette(void);
 

@@ -50,7 +50,8 @@ extern fix g_SineTable[];
 #define ONEOVERTABLE_SIZE 256
 #define oneover(a) g_oneOver[(a)]
 #define oneover16(a) g_oneOver16[(a)]
-#define multOneOver(a, b) (fix)((a >> 8) * (oneover(b))) // Essentially INT * FIX, useful for reciprocal
+#define multOneOver(a, b)                                                                          \
+  (fix)((a >> 8) * (oneover(b))) // Essentially INT * FIX, useful for reciprocal
 extern fix g_oneOver[];
 extern fix g_oneOver16[];
 
@@ -63,33 +64,35 @@ extern fix g_oneOver16[];
 #define largest(x, y, z) ((x) * (x > y & x > z) + (y) * (y > x & y > z) + (z) * (z > x & z > y))
 #define smin(a, b) (b + ((a - b) & ((a - b) >> (sizeof(int) * 8 - 1))))
 #define smallest(x, y, z) smin(x, smin(y, z))
-#define orient2d(a, b, c) fixmult((b).x - (a).x, (c).y - (a).y) - fixmult((b).y - (a).y, (c).x - (a).x)
-#define orient2dint(a, b, c) (((b).x - (a).x) * ((c).y - (a).y)) - (((b).y - (a).y) * ((c).x - (a).x))
+#define orient2d(a, b, c)                                                                          \
+  fixmult((b).x - (a).x, (c).y - (a).y) - fixmult((b).y - (a).y, (c).x - (a).x)
+#define orient2dint(a, b, c)                                                                       \
+  (((b).x - (a).x) * ((c).y - (a).y)) - (((b).y - (a).y) * ((c).x - (a).x))
 
-#define subtractV3D(a, b, c) \
-    (c).x = (a).x - (b).x;   \
-    (c).y = (a).y - (b).y;   \
-    (c).z = (a).z - (b).z;
+#define subtractV3D(a, b, c)                                                                       \
+  (c).x = (a).x - (b).x;                                                                           \
+  (c).y = (a).y - (b).y;                                                                           \
+  (c).z = (a).z - (b).z;
 
 typedef struct V2D
 {
-    fix x;
-    fix y;
+  fix x;
+  fix y;
 } V2D;
 
 typedef struct V3D
 {
-    fix x;
-    fix y;
-    fix z;
+  fix x;
+  fix y;
+  fix z;
 } V3D;
 
 typedef struct V4D
 {
-    fix x;
-    fix y;
-    fix z;
-    fix w;
+  fix x;
+  fix y;
+  fix z;
+  fix w;
 } V4D;
 
 #define TRI_INTENSITY_MASK 0xFF
@@ -101,32 +104,32 @@ typedef struct V4D
 
 typedef struct TRI
 {
-    unsigned short a, b, c, material_offset;
-    V2D v1, v2, v3; // Used in render pass
-    fix c1, c2, c3; // Used in render pass
-    void *next;     // Used in render pass
+  unsigned short a, b, c, material_offset;
+  V2D v1, v2, v3; // Used in render pass
+  fix c1, c2, c3; // Used in render pass
+  void *next;     // Used in render pass
 } TRI;
 
 typedef struct POLYGON
 {
-    V3D verts[MAX_CLIPPING_VERTS];
-    int numVerts;
+  V3D verts[MAX_CLIPPING_VERTS];
+  int numVerts;
 } POLYGON;
 
 typedef struct MAT43
 {
-    fix m11, m12, m13;
-    fix m21, m22, m23;
-    fix m31, m32, m33;
-    fix tx, ty, tz;
+  fix m11, m12, m13;
+  fix m21, m22, m23;
+  fix m31, m32, m33;
+  fix tx, ty, tz;
 } MAT43;
 
 typedef struct MAT44
 {
-    fix m11, m12, m13, m14;
-    fix m21, m22, m23, m24;
-    fix m31, m32, m33, m34;
-    fix m41, m42, m43, m44;
+  fix m11, m12, m13, m14;
+  fix m21, m22, m23, m24;
+  fix m31, m32, m33, m34;
+  fix m41, m42, m43, m44;
 } MAT44;
 
 void SetupTables();
