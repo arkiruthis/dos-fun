@@ -157,22 +157,36 @@ void DrawTris()
         short_dx = (tri->v2.x - tri->v1.x) * oneover16(shortHeight);
         short_cx = (tri->c2 - tri->c1) * oneover(shortHeight);
 
-        do
-        {
-          j = abs((rx >> 16) - (lx >> 16));
-          k = min(lx, rx);
-          ptrEnd = ptr + (k >> 16);
-          if (lx <= rx)
+        if (long_dx < short_dx)
+        { // Left side long edge
+          do
+          {
+            j = (rx >> 16) - (lx >> 16);
+            ptrEnd = ptr + (lx >> 16);
             hline(j, lc, rc, ptrEnd);
-          else
-            hline(j, rc, lc, ptrEnd);
 
-          lx += long_dx;
-          rx += short_dx;
-          lc += long_cx;
-          rc += short_cx;
-          ptr += BACKBUFFER_WIDTH;
-        } while (--shortHeight > 0);
+            lx += long_dx;
+            rx += short_dx;
+            lc += long_cx;
+            rc += short_cx;
+            ptr += BACKBUFFER_WIDTH;
+          } while (--shortHeight > 0);
+        }
+        else
+        { // Right side long edge
+          do
+          {
+            j = (rx >> 16) - (lx >> 16);
+            ptrEnd = ptr + (lx >> 16);
+            hline(j, lc, rc, ptrEnd);
+
+            rx += long_dx;
+            lx += short_dx;
+            rc += long_cx;
+            lc += short_cx;
+            ptr += BACKBUFFER_WIDTH;
+          } while (--shortHeight > 0);
+        }
       }
 
       // Bottom Half
@@ -183,26 +197,42 @@ void DrawTris()
         short_dx = (tri->v3.x - tri->v2.x) * oneover16(shortHeight);
         short_cx = (tri->c3 - tri->c2) * oneover(shortHeight);
 
-        rx = (tri->v2.x << 16);
-        rc = (tri->c2 << 8);
+        if (long_dx < short_dx)
+        { // Left side long edge
+          lx = (tri->v2.x << 16);
+          lc = (tri->c2 << 8);
 
-        do
-        {
-          j = abs((rx >> 16) - (lx >> 16));
-          k = min(lx, rx);
-          ptrEnd = ptr + (k >> 16);
-          if (lx <= rx)
+          do
+          {
+            j = (rx >> 16) - (lx >> 16);
+            ptrEnd = ptr + (lx >> 16);
             hline(j, lc, rc, ptrEnd);
-          else
-            hline(j, rc, lc, ptrEnd);
 
-          lx += long_dx;
-          rx += short_dx;
-          lc += long_cx;
-          rc += short_cx;
-          ptr += BACKBUFFER_WIDTH;
+            rx += long_dx;
+            lx += short_dx;
+            rc += long_cx;
+            lc += short_cx;
+            ptr += BACKBUFFER_WIDTH;
+          } while (--shortHeight > 0);
+        }
+        else
+        { // Right side long edge
+          rx = (tri->v2.x << 16);
+          rc = (tri->c2 << 8);
 
-        } while (--shortHeight > 0);
+          do
+          {
+            j = (rx >> 16) - (lx >> 16);
+            ptrEnd = ptr + (lx >> 16);
+            hline(j, lc, rc, ptrEnd);
+
+            lx += long_dx;
+            rx += short_dx;
+            lc += long_cx;
+            rc += short_cx;
+            ptr += BACKBUFFER_WIDTH;
+          } while (--shortHeight > 0);
+        }
       }
 
       renderQueue[i] = tri->next;
