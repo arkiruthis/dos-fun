@@ -51,7 +51,7 @@ int main(void)
 
     for (i = 0; i < cvector_size(g_Mesh.verts); ++i)
     {
-      MultV4DMatC(&g_Mesh.verts[i], &g_Mesh.vertsTransformed[i], &mat);
+      MultV4DMatCToScreen(&g_Mesh.verts[i], &g_Mesh.vertsTransformed[i], &mat);
       MultV4DMatC(&g_Mesh.vertNormals[i], &g_Mesh.vertNormalsTransformed[i], &mat);
       g_Mesh.vertsTransformed[i].w =
           max(0, DotProduct((V3D *)&g_Mesh.vertNormalsTransformed[i], &lightDir));

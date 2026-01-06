@@ -216,16 +216,17 @@ void MultV4DMatC(V4D *v, V4D *dest, MAT43 *mat)
             mat->tz;
 }
 
-void MultV4DMat(V4D *v, V4D *dest, MAT44 *mat)
+void MultV4DMatCToScreen(V4D *v, V4D *dest, MAT43 *mat)
 {
-  dest->x = fixmult(v->x, mat->m11) + fixmult(v->y, mat->m12) + fixmult(v->z, mat->m13) +
-            fixmult(v->w, mat->m14);
-  dest->y = fixmult(v->x, mat->m21) + fixmult(v->y, mat->m22) + fixmult(v->z, mat->m23) +
-            fixmult(v->w, mat->m24);
-  dest->z = fixmult(v->x, mat->m31) + fixmult(v->y, mat->m32) + fixmult(v->z, mat->m33) +
-            fixmult(v->w, mat->m34);
-  dest->w = fixmult(v->x, mat->m41) + fixmult(v->y, mat->m42) + fixmult(v->z, mat->m43) +
-            fixmult(v->w, mat->m44);
+  dest->x =
+      fixmultSML(v->x, mat->m11) + fixmultSML(v->y, mat->m12) + fixmultSML(v->z, mat->m13) + 128;
+  dest->x >>= 8;
+  dest->y =
+      fixmultSML(v->x, mat->m21) + fixmultSML(v->y, mat->m22) + fixmultSML(v->z, mat->m23) + 128;
+  dest->y >>= 8;
+  dest->z =
+      fixmultSML(v->x, mat->m31) + fixmultSML(v->y, mat->m32) + fixmultSML(v->z, mat->m33) + 128;
+  dest->z >>= 8;
 }
 
 V3D SubV3D(const V3D *a, const V3D *b)

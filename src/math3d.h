@@ -140,7 +140,7 @@ void SetScaleUniversal(MAT43 *mat, fix s);
 void MultMatMat(MAT43 *dest, MAT43 *a, MAT43 *b);
 void MultV3DMat(V3D *v, V3D *dest, MAT43 *mat);
 void MultV4DMatC(V4D *v, V4D *dest, MAT43 *mat);
-void MultV4DMat(V4D *v, V4D *dest, MAT44 *mat);
+void MultV4DMatToScreen(V4D *v, V4D *dest, MAT44 *mat);
 void RotateX(MAT43 *mat, int angle);
 void RotateY(MAT43 *mat, int angle);
 void RotateAxis(MAT43 *mat, V3D *axis, int angle);

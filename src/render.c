@@ -65,6 +65,18 @@ void DrawTris()
     a = g_Mesh.vertsTransformed[tri->a];
     b = g_Mesh.vertsTransformed[tri->b];
     c = g_Mesh.vertsTransformed[tri->c];
+
+    // Cull triangles outside the screen bounds
+    // We'll jump to a dedicated clipping routine later for proper clipping.
+    if (a.x < WIDTH_LEFT_BOUNDARY || a.y < WIDTH_TOP_BOUNDARY || b.x < WIDTH_LEFT_BOUNDARY ||
+        b.y < WIDTH_TOP_BOUNDARY || c.x < WIDTH_LEFT_BOUNDARY || c.y < WIDTH_TOP_BOUNDARY ||
+        a.x >= WIDTH_RIGHT_BOUNDARY || a.y >= WIDTH_BOTTOM_BOUNDARY ||
+        b.x >= WIDTH_RIGHT_BOUNDARY || b.y >= WIDTH_BOTTOM_BOUNDARY ||
+        c.x >= WIDTH_RIGHT_BOUNDARY || c.y >= WIDTH_BOTTOM_BOUNDARY)
+    {
+      continue;
+    }
+
     j = tri->material_offset;
     k = (a.z + b.z + c.z); // aggregate depths
     k = clamp(127 + (k >> 3), 0, RADIX_DEPTH - 1);
