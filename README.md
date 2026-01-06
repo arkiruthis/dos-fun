@@ -18,7 +18,7 @@ This project explores classic DOS-era 3D graphics programming, focusing on:
 
 ## QuickStart
 
-The releases section has a [dos-fun.zip](https://github.com/arkiruthis/dos-fun/releases/tag/v1.0.0) that you can just unpack into a DOSBOX folder and run from the emulator. It includes CWSDPMI.EXE and just includes the DJGPP version.
+The releases section has a [dos-fun.zip](https://github.com/arkiruthis/dos-fun/releases/tag/v1.0.1) that you can just unpack into a DOSBOX folder and run from the emulator. It includes CWSDPMI.EXE and just includes the DJGPP version.
 
 ## Thanks
 - ray//.tSCc. - For this fascinating [2005 demo coding article](http://alive.atari.org/alive11/frstclip.php) which provided a much better radix sort alternative to qsort() for speeding up the triangle depth pass.
